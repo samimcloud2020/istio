@@ -1,0 +1,14 @@
+To solve your problem you can follow these steps:
+Add new User
+adduser newUser
+usermod -aG sudo newUser
+su - newUser
+Login to the newly created User
+su - newUser
+Add User to the Docker Group
+sudo groupadd docker
+sudo usermod -aG docker $USER
+Relogin and the start minikube with this following commands
+minikube start --driver=docker
+Verify minikube is running
+docker ps
