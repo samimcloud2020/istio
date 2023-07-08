@@ -1,0 +1,52 @@
+------when one service "suspend traffic" kiali auto generate yaml file for virtual service----------------------------
+  kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-position-tracker
+  namespace: default
+  uid: c4f3e839-8ad3-4c84-b81f-93a2ac3f2c64
+  resourceVersion: '11203'
+  generation: 1
+  creationTimestamp: '2023-07-08T04:00:35Z'
+  labels:
+    kiali_wizard: suspend_traffic
+  managedFields:
+    - manager: Go-http-client
+      operation: Update
+      apiVersion: networking.istio.io/v1alpha3
+      time: '2023-07-08T04:00:35Z'
+spec:
+  hosts:
+    - fleetman-position-tracker.default.svc.cluster.local
+  http:
+    - fault:
+        abort:                                              // see abort 100%
+          httpStatus: 503
+          percentage:
+            value: 100
+      route:
+        - destination:
+            host: fleetman-position-tracker.default.svc.cluster.local
+-----------------------------------------destinationrules------------------------------------------------------------------------------------
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-position-tracker
+  namespace: default
+  uid: a54cf70e-2a51-43b6-8591-655e781ef957
+  resourceVersion: '11204'
+  generation: 1
+  creationTimestamp: '2023-07-08T04:00:35Z'
+  labels:
+    kiali_wizard: suspend_traffic     // suspend traffic 
+  managedFields:
+    - manager: Go-http-client
+      operation: Update
+      apiVersion: networking.istio.io/v1alpha3
+      time: '2023-07-08T04:00:35Z'
+spec:
+  host: fleetman-position-tracker.default.svc.cluster.local
+  subsets: []
+----------------------------------------------------------------------------------------------------------------------------------------------------
+  
+  
