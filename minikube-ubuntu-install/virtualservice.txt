@@ -1,5 +1,5 @@
 ------when one service "suspend traffic" kiali auto generate yaml file for virtual service----------------------------
-  kind: VirtualService
+kind: VirtualService
 apiVersion: networking.istio.io/v1alpha3
 metadata:
   name: fleetman-position-tracker
@@ -47,6 +47,52 @@ metadata:
 spec:
   host: fleetman-position-tracker.default.svc.cluster.local
   subsets: []
--------------------------------------want normal then delete all traffic routing---------------------------------------------------------------------------------------------------------------
+-------------------------------------want normal then delete all traffic routing---------------------------------------------------------------------------------------------------------------virtualservice example--------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: fleetman-position-tracker
+spec:
+  hosts:
+  - fleetman-position-tracker.default.svc.cluster.local
+  http:
+  - name: "v2"          //http req matches prefix /route1 and /route2 , rewrite to /route3
+    match:
+    - uri:
+        prefix: "/route1"
+    - uri:
+        prefix: "/route2"
+    rewrite:
+      uri: "/route3"
+    route:
+    - destination:
+        host: fleetman-position-tracker.default.svc.cluster.local
+        subset: v2                                                     // destination host with version v2
+  - name: "v1"
+    route:
+    - destination:
+        host: fleetman-position-tracker.default.svc.cluster.local
+        subset: v1
+
+routes all HTTP traffic by default to pods of the tracker service with label “version: v1”. In addition, HTTP requests with path starting with /route1/ or /route2/ will be rewritten to /route3 and sent to pods with label “version: v2”.
   
-  
+-------------------------------------------------------------------------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: reviews-destination
+spec:
+  host: fleetman-position-tracker.default.svc.cluster.local
+  subsets:                               //subset defined 
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+
+
+A subset/version of a route destination is identified with a reference to a named service subset which must be declared in a corresponding DestinationRule.
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
