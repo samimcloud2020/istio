@@ -1,0 +1,4 @@
+
+client(source ip)---->weighting----10%---->load balancer-------> pod9canary)
+                              -----90%----->load balancer-------> pod (non canary)
+this structure not working for session affinity with weighted routing.
