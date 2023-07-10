@@ -1,0 +1,38 @@
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-staff-service  # just a name of virtual service , you can give any name
+  namespace: default
+spec:
+  hosts:
+    - fleetman-staff-service.default.svc.cluster.local   # k8s service dns name , 
+  http:
+    - route:
+        - destination:
+            host: fleetman-staff-service.default.svc.cluster.local           # target dns name
+            subset: risky
+          weight: 10
+        - destination:
+            host: fleetman-staff-service.default.svc.cluster.local              # target dns name
+            subset: safe
+          weight: 90
+---
+kind: DestinationRule           #defining which pod should be part of each subset
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-staff-service
+  namespace: default
+spec:
+  host: fleetman-staff-service.default.svc.cluster.local  # service
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        useSourceIp: true
+  subsets:
+    - labels:
+        version: risky           #pod template label in deployment   key-value pair   version: risky
+      name: risky                # name of subset , which define in virtualservices rule 
+    - labels:
+        version: safe           #pod template label in deployment   key-value pair   version: safe
+      name: safe
