@@ -8,3 +8,6 @@ Forwarding from 0.0.0.0:3000 -> 3000
 ------------------------------jager------------------------------------------------------------------------------------------
 samim@ip-172-31-27-156:~$ kubectl port-forward svc/tracing    --address 0.0.0.0  -n istio-system 31001:80
 Forwarding from 0.0.0.0:31001 -> 16686
+--------------------------webapp frontend------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio/warmup-exercise$ kubectl port-forward service/fleetman-webapp  --address 0.0.0.0   30080:80
+Forwarding from 0.0.0.0:30080 -> 80
