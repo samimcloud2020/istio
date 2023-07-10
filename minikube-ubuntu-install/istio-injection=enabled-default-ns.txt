@@ -1,0 +1,19 @@
+samim@ip-172-31-27-156:~$ kubectl label namespace default istio-injection=enabled
+namespace/default labeled
+
+samim@ip-172-31-27-156:~$ kubectl  get ns default -o yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: "2023-07-10T04:56:44Z"
+  labels:
+    istio-injection: enabled     <----------------------------------------------------------------
+    kubernetes.io/metadata.name: default
+  name: default
+  resourceVersion: "1713"
+  uid: cee328d3-4f3c-4b16-a109-20cfe4a515dc
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
