@@ -1,0 +1,8 @@
+
+
+client------------> service x---90%--> pod (old)
+                             ---10%---> pod (new)
+
+  when found pod(new) ok, shift 100%.
+
+  by virtualservice and destinationrules.
