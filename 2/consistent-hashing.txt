@@ -1,0 +1,5 @@
+
+client(sou ip)------>load balancer------->pod (canary)
+                                  -------> pod (non canary)
+
+  consistent hashing worked.
