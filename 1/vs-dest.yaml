@@ -24,11 +24,11 @@ metadata:
   name: fleetman-staff-service
   namespace: default
 spec:
-  host: fleetman-staff-service.default.svc.cluster.local
+  host: fleetman-staff-service.default.svc.cluster.local  # service
   subsets:
     - labels:
-        version: risky
+        version: risky           #pod template label in deployment   key-value pair   version: risky
       name: risky
     - labels:
-        version: safe
+        version: safe           #pod template label in deployment   key-value pair   version: safe
       name: safe
