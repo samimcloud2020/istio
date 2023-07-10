@@ -1,0 +1,24 @@
+samim@ip-172-31-27-156:~/istio/2-Traffic-Starting$ while true; do curl http://54.196.150.177:30080/api/vehicles/driver/City%20Truck ; echo; done;
+
+see after 90% and 10%.  9 numbers api call to 1.jpg and 1 api call to placeholder.png
+
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/placeholder.png"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/placeholder.png"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/placeholder.png"}
+
+let 100% to risky and 0% to safe.
