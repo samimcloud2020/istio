@@ -1,0 +1,8 @@
+istiod------
+for configuring proxies.
+
+istiod----
+have the vistualservices (help to route as per yaml to envoy proxies of pod)
+its overwrites the envoy proxies as per yaml virtualservices routing.
+
+
