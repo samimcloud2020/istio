@@ -1,0 +1,27 @@
+--------------------------------------DNS for Services and Pods--------------------------------------------------------------------------------
+Kubernetes creates DNS records for Services and Pods. You can contact Services with consistent DNS names instead of IP addresses.
+
+Kubernetes publishes information about Pods and Services which is used to program DNS. 
+  
+Kubelet configures Pods' DNS so that running containers can lookup Services by name rather than IP.
+
+Services defined in the cluster are assigned DNS names. 
+  
+By default, a client Pod's DNS search list includes the Pod's own namespace and the cluster's default domain.
+
+svc:
+  my-svc.my-namespace.svc.cluster-domain.example
+pod:
+  pod-ip-address.my-namespace.pod.cluster-domain.example.
+
+pod exposed by svc:
+  pod-ip-address.service-name.my-namespace.svc.cluster-domain.example
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+  client-----svc----search dns------k8s load balancing-------pods of svc
+  ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+  
+  
