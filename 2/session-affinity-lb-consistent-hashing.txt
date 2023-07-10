@@ -1,0 +1,24 @@
+---------------------------------LoadBalancerSettings.ConsistentHashLB------------------------------------------
+
+Consistent Hash-based load balancing can be used to provide soft session affinity based on 
+
+HTTP headers, 
+cookies or 
+other properties. 
+
+The affinity to a particular destination host may be lost when one or more hosts are added/removed from the destination service.
+---------------------------------------------------------------------------------------------------------------------------------
+httpHeaderName	         string (oneof)              	Hash based on a specific HTTP header.
+
+httpCookie	       HTTPCookie (oneof)	                    Hash based on HTTP cookie.
+
+useSourceIp    	  bool (oneof)	               Hash based on the source IP address. This is applicable for both TCP and HTTP connections.
+
+httpQueryParameterName	 string (oneof)	            Hash based on a specific HTTP query parameter.
+
+ringHash	           RingHash (oneof)	                   The ring/modulo hash load balancer implements consistent hashing to backend hosts.
+
+maglev	              MagLev (oneof)	                              The Maglev load balancer implements consistent hashing to backend hosts.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
