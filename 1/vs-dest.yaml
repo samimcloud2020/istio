@@ -28,7 +28,7 @@ spec:
   subsets:
     - labels:
         version: risky           #pod template label in deployment   key-value pair   version: risky
-      name: risky
+      name: risky                # name of subset , which define in virtualservices rule 
     - labels:
         version: safe           #pod template label in deployment   key-value pair   version: safe
       name: safe
