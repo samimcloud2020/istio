@@ -1,1 +1,4 @@
 samim@ip-172-31-27-156:~/istio/3-Gateways-Starting$ while true; do curl -s http://50.16.16.68:31380/vehicle/City%20Truck | grep title  ; echo; done;
+
+
+change virtualservice weighted % and check.
