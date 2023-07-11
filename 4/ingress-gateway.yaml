@@ -19,41 +19,41 @@ spec:
 kind: VirtualService
 apiVersion: networking.istio.io/v1alpha3
 metadata:
-  name: fleetman-staff-service
+  name: webapp-service
   namespace: default
 spec:
   hosts:
-    - fleetman-staff-service.default.svc.cluster.local
+    - webapp.default.svc.cluster.local
   gateways:
   - http-ingress-gateway
   - "*"
   http:
     - route:
         - destination:
-            host: fleetman-staff-service.default.svc.cluster.local
-            subset: v1
+            host: webapp-original.default.svc.cluster.local
+            subset: original
           weight: 100
         - destination:
-            host: fleetman-staff-service.default.svc.cluster.local
-            subset: v2
+            host: webapp-experimental.default.svc.cluster.local
+            subset: experimental
           weight: 0
        
 ---
 kind: DestinationRule
 apiVersion: networking.istio.io/v1alpha3
 metadata:
-  name: fleetman-staff-service
+  name: webapp-service
   namespace: default
 spec:
-  host: fleetman-staff-service.default.svc.cluster.local
+  host: webapp-service.default.svc.cluster.local
   trafficPolicy:
     loadBalancer:
       simple: ROUND_ROBIN
   subsets:
     - labels:
-        version: v1
-      name: v1
+        version: original
+      name: original
     - labels:
-        version: v2
-      name: v2
+        version: experimental
+      name: experimental
    
