@@ -1,0 +1,8 @@
+-------------------------------------Load balancing options------------------------------------------------------------
+By default, Istio uses a least requests load balancing policy, where requests are distributed among the instances with the least number of requests.
+Istio also supports the following models, which you can specify in destination rules for requests to a particular service or service subset.
+
+Random: Requests are forwarded at random to instances in the pool.
+Weighted: Requests are forwarded to instances in the pool according to a specific percentage.
+Round robin: Requests are forwarded to each instance in sequence.
+---------------------------------------------------------------------------------------------------------------------------------------
