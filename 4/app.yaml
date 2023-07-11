@@ -175,7 +175,7 @@ spec:
     - name: http
       port: 80
       nodePort: 30080
-  type: NodePort
+  type: NodePort    # after testing make it ClusterIp so that its not exposed and its inside the cluster
 ---
 apiVersion: v1
 kind: Service
