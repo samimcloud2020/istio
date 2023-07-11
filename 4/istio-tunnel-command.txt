@@ -1,0 +1,43 @@
+samim@ip-172-31-27-156:~$ minikube tunnel
+[sudo] password for samim: 
+Status:
+        machine: minikube
+        pid: 55851
+        route: 10.96.0.0/12 -> 192.168.49.2
+        minikube: Running
+        services: [istio-ingressgateway]
+    errors: 
+                minikube: no errors
+                router: no errors
+                loadbalancer emulator: no errors
+-------------------------------------------------------------------------------------------------------------------------
+samim@ip-172-31-27-156:~$ k get all -n istio-system
+NAME                                       READY   STATUS    RESTARTS   AGE
+pod/grafana-6fc8b755b8-vlcp4               1/1     Running   0          10m
+pod/istio-egressgateway-b5f97b984-fqbjw    1/1     Running   0          10m
+pod/istio-ingressgateway-d8c57856b-c4fp5   1/1     Running   0          10m
+pod/istiod-5996f6554f-9nqd4                1/1     Running   0          10m
+pod/jaeger-66587d84fd-bgkcv                1/1     Running   0          10m
+pod/kiali-74f4f46cdc-48zc6                 1/1     Running   0          10m
+pod/prometheus-8457c4fc9b-jtzs5            2/2     Running   0          10m
+
+NAME                           TYPE           CLUSTER-IP       EXTERNAL-IP    PORT(S)                                                                      AGE
+service/grafana                NodePort       10.99.139.163    <none>         3000:31002/TCP                                                               10m
+service/istio-egressgateway    ClusterIP      10.96.236.176    <none>         80/TCP,443/TCP                                                               10m
+service/istio-ingressgateway   LoadBalancer   10.101.53.63     10.101.53.63   15021:31417/TCP,80:31380/TCP,443:31452/TCP,31400:31916/TCP,15443:31629/TCP   10m
+service/istiod                 ClusterIP      10.111.116.195   <none>         15010/TCP,15012/TCP,443/TCP,15014/TCP                                        10m
+service/jaeger-collector       ClusterIP      10.107.108.230   <none>         14268/TCP,14250/TCP                                                          10m
+service/kiali                  NodePort       10.109.116.8     <none>         20001:31000/TCP,9090:31144/TCP                                               10m
+service/prometheus             ClusterIP      10.104.203.140   <none>         9090/TCP                                                                     10m
+service/tracing                NodePort       10.98.172.59     <none>         80:31001/TCP                                                                 10m
+service/zipkin                 ClusterIP      10.96.103.23     <none>         9411/TCP                                                                     10m
+
+
+now see service/istio-ingressgateway pending state to got EXTERNAL IP (10.101.53.63).
+
+------------------------------------------------------------------------------------------------------------------------------------
+samim@ip-172-31-27-156:~$ kubectl port-forward service/istio-ingressgateway -n istio-system  --address 0.0.0.0   31380:80
+Forwarding from 0.0.0.0:31380 -> 8080
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
