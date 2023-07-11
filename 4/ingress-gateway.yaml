@@ -14,7 +14,7 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - "*"
+      - "*"
 ---    
 kind: VirtualService
 apiVersion: networking.istio.io/v1alpha3
@@ -27,7 +27,6 @@ spec:
     #- fleetman-webapp.default.svc.cluster.local
   gateways:
     - http-ingress-gateway
-  
   http:
     - route:
         - destination:
