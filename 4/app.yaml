@@ -170,8 +170,7 @@ spec:
   # or maybe external users to connect to (eg browser)
   selector:
     app: webapp
-    version: v1
-    version: v2
+    
   ports:
     - name: http
       port: 80
