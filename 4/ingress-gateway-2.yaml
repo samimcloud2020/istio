@@ -1,51 +1,46 @@
----
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: http-ingress-gateway
+  name: ingress-gateway-configuration
 spec:
-  # The selector matches the ingress gateway pod labels.
-  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
   selector:
-    istio: ingressgateway
+    istio: ingressgateway # use Istio default gateway implementation
   servers:
   - port:
       number: 80
       name: http
       protocol: HTTP
     hosts:
-      - "*"   # domain name of external website
----    
+    - "*"   # Domain name of the external website
+---
 kind: VirtualService
 apiVersion: networking.istio.io/v1alpha3
 metadata:
   name: fleetman-webapp
   namespace: default
 spec:
-  hosts:
-    - "*"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
-    #- fleetman-webapp.default.svc.cluster.local
+  hosts:      # which incoming host are we applying the proxy rules to???
+    - "*" # Copy the value in the gateway hosts - usually a Domain Name
   gateways:
-    - http-ingress-gateway
+    - ingress-gateway-configuration
   http:
     - route:
         - destination:
-            host: fleetman-webapp.default.svc.cluster.local
+            host: fleetman-webapp
             subset: v1
-          weight: 50
+          weight: 90
         - destination:
-            host: fleetman-webapp.default.svc.cluster.local
+            host: fleetman-webapp
             subset: v2
-          weight: 50
-       
+          weight: 10
 ---
 kind: DestinationRule
 apiVersion: networking.istio.io/v1alpha3
 metadata:
-  name: fleetman-webapp-ds
+  name: fleetman-webapp
   namespace: default
 spec:
-  host: fleetman-webapp.default.svc.cluster.local
+  host: fleetman-webapp
   subsets:
     - labels:
         version: v1
@@ -53,4 +48,3 @@ spec:
     - labels:
         version: v2
       name: v2
-   
