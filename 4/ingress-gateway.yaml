@@ -23,20 +23,21 @@ metadata:
   namespace: default
 spec:
   hosts:
-    - fleetman-webapp.default.svc.cluster.local
+    - "*"
+    #- fleetman-webapp.default.svc.cluster.local
   gateways:
-  - http-ingress-gateway
-  - "*"
+    - http-ingress-gateway
+  
   http:
     - route:
         - destination:
             host: fleetman-webapp.default.svc.cluster.local
             subset: original
-          weight: 100
+          weight: 50
         - destination:
             host: fleetman-webapp.default.svc.cluster.local
             subset: experimental
-          weight: 0
+          weight: 50
        
 ---
 kind: DestinationRule
