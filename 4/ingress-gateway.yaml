@@ -14,7 +14,7 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-      - "*"
+      - "*"   # domain name of external website
 ---    
 kind: VirtualService
 apiVersion: networking.istio.io/v1alpha3
@@ -23,7 +23,7 @@ metadata:
   namespace: default
 spec:
   hosts:
-    - "*"
+    - "*"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
     #- fleetman-webapp.default.svc.cluster.local
   gateways:
     - http-ingress-gateway
