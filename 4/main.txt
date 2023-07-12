@@ -1,0 +1,4 @@
+external website -----> ingress gateway-----lb--->web-v1
+                                              --->web-v2
+
+                                              web v1 & v2 based on virtualservice
