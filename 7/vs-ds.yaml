@@ -47,8 +47,8 @@ spec:
   host: fleetman-webapp
   subsets:
     - labels:
-        version: original
-      name: original
+        version: safe
+      name: safe
     - labels:
-        version: experimental
-      name: experimental
+        version: risky
+      name: risky
