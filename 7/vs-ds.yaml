@@ -31,11 +31,11 @@ spec:
     route:     #THEN
     - destination:
         host: fleetman-staff-service
-        subset: experimental
+        subset: risky
   - route:    # CACHE ALL
     - destination:
         host: fleetman-staff-service
-        subset: original  
+        subset: safe
  
 ---
 kind: DestinationRule
