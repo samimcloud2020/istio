@@ -1,0 +1,7 @@
+
+----------------match header so goes to experimental----------------------------------------------------------------------
+samim@ip-172-31-27-156:~$ while true; do curl -H "my-header: canary" -s http://54.90.89.30:31380 | grep title; echo; done;
+
+
+----------------------goes to original as header not match--------------------------------------
+samim@ip-172-31-27-156:~$ while true; do curl -H "my-header: xxx" -s http://54.90.89.30:31380 | grep title; echo; done;
