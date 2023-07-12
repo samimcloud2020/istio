@@ -138,7 +138,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: staff-service
+  name: staff-service-safe
 spec:
   selector:
     matchLabels:
@@ -163,7 +163,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: staff-service-risky-version
+  name: staff-service-risky
 spec:
   selector:
     matchLabels:
