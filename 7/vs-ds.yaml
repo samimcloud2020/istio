@@ -16,7 +16,7 @@ spec:
 kind: VirtualService
 apiVersion: networking.istio.io/v1alpha3
 metadata:
-  name: fleetman-webapp
+  name: fleetman-staff-service
   namespace: default
 spec:
   hosts:      # which incoming host are we applying the proxy rules to???
@@ -30,21 +30,21 @@ spec:
           exact: canary
     route:     #THEN
     - destination:
-        host: fleetman-webapp
+        host: fleetman-staff-service
         subset: experimental
   - route:    # CACHE ALL
     - destination:
-        host: fleetman-webapp
+        host: fleetman-staff-service
         subset: original  
  
 ---
 kind: DestinationRule
 apiVersion: networking.istio.io/v1alpha3
 metadata:
-  name: fleetman-webapp
+  name: fleetman-staff-service
   namespace: default
 spec:
-  host: fleetman-webapp
+  host: fleetman-staff-service
   subsets:
     - labels:
         version: safe
