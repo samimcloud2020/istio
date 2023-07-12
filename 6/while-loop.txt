@@ -1,0 +1,4 @@
+samim@ip-172-31-27-156:~/istio/3-Gateways-Starting$ while true; do curl -s  http://experimental.trycloud.co.in:31380 | grep title; echo; done;
+
+
+samim@ip-172-31-27-156:~/istio/3-Gateways-Starting$ while true; do curl -s  http://original.trycloud.co.in:31380 | grep title; echo; done;
