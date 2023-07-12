@@ -1,0 +1,8 @@
+-------------------redirect traffic to original version by prefix / ------------------------------------------
+samim@ip-172-31-27-156:~/istio/3-Gateways-Starting$ while true; do curl -s  http://3.90.213.26:31380/ | grep title; echo; done;
+
+------------------redirect traffic to experimental version  by prefix /experimental------------------------------------------
+samim@ip-172-31-27-156:~/istio/3-Gateways-Starting$ while true; do curl -s  http://3.90.213.26:31380/experimental | grep title; echo; done;
+
+----------------------------redirect traffic to experimental version by prefix  /canary---------------------------------------------------------
+samim@ip-172-31-27-156:~/istio/3-Gateways-Starting$ while true; do curl -s  http://3.90.213.26:31380/canary | grep title; echo; done;
