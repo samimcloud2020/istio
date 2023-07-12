@@ -1,0 +1,29 @@
+experimental.trycloud.co.in        vm public ip
+original.trycloud.co.in            vm public ip
+
+
+$minikube tunnel
+
+samim@ip-172-31-27-156:~/istio/3-Gateways-Starting$ k get all -n istio-system
+NAME                                       READY   STATUS    RESTARTS   AGE
+pod/grafana-6fc8b755b8-k88jb               1/1     Running   0          44m
+pod/istio-egressgateway-b5f97b984-7lxtc    1/1     Running   0          44m
+pod/istio-ingressgateway-d8c57856b-lfkb6   1/1     Running   0          44m
+pod/istiod-5996f6554f-95hhw                1/1     Running   0          44m
+pod/jaeger-66587d84fd-48zqc                1/1     Running   0          44m
+pod/kiali-74f4f46cdc-wmgws                 1/1     Running   0          44m
+pod/prometheus-8457c4fc9b-hnwpp            2/2     Running   0          44m
+
+NAME                           TYPE           CLUSTER-IP       EXTERNAL-IP    PORT(S)                                                                      AGE
+service/grafana                NodePort       10.108.164.156   <none>         3000:31002/TCP                                                               44m
+service/istio-egressgateway    ClusterIP      10.106.44.235    <none>         80/TCP,443/TCP                                                               44m
+service/istio-ingressgateway   LoadBalancer   10.96.202.97     10.96.202.97   15021:32106/TCP,80:31380/TCP,443:32552/TCP,31400:32218/TCP,15443:31623/TC
+
+$sudo vim /etc/hosts
+10.96.202.97  trycloud.co.in
+
+browser
+http://experimental.trycloud.co.in:31380/vehicle/City%20Truck
+
+http://original.trycloud.co.in:31380/vehicle/City%20Truck
+
