@@ -1,0 +1,8 @@
+In the next video we'll be modifying the http headers sent to your browser. There are many extensions available to support this 
+  (all with very similar names!), but in the video I use the extension called "ModHeader".
+
+You can find this on the Chrome store here:
+
+https://chrome.google.com/webstore/detail/modheader-modify-http-hea/idgpnmonknjnojddfkpgkljpfnnfcklj
+
+If you want to use a different one, or you're running on a different browser, no problem - but you will need to study the instructions on how to use it!
