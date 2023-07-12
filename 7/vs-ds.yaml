@@ -24,19 +24,19 @@ spec:
   gateways:
     - ingress-gateway-configuration
   http:
-    - match:
-      - headers: # IF
-          my-header: 
-            excat: canary
-      route:  #THEN
-        - destination:
-            host: fleetman-webapp
-            subset: experimental 
-    - route:   # CACHE ALL
-      - destination:
-          host: fleetman-webapp
-          subset: original            
-      
+  - match:
+    - headers:   # IF
+        my-header:
+          exact: canary
+    route:     #THEN
+    - destination:
+        host: fleetman-webapp
+        subset: experimental
+  - route:    # CACHE ALL
+    - destination:
+        host: fleetman-webapp
+        subset: original  
+ 
 ---
 kind: DestinationRule
 apiVersion: networking.istio.io/v1alpha3
