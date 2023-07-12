@@ -70,7 +70,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: webapp-original
+  name: webapp
 spec:
   selector:
     matchLabels:
@@ -80,34 +80,10 @@ spec:
     metadata:
       labels:
         app: webapp
-        version: original
     spec:
       containers:
       - name: webapp
         image: richardchesterwood/istio-fleetman-webapp-angular:6
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: production-microservice
-        imagePullPolicy: Always
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: webapp-experimental
-spec:
-  selector:
-    matchLabels:
-      app: webapp
-  replicas: 1
-  template: # template for the pods
-    metadata:
-      labels:
-        app: webapp
-        version: experimental
-    spec:
-      containers:
-      - name: webapp
-        image: richardchesterwood/istio-fleetman-webapp-angular:6-experimental
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: production-microservice
@@ -138,7 +114,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: staff-service
+  name: staff-service-safe
 spec:
   selector:
     matchLabels:
@@ -148,6 +124,7 @@ spec:
     metadata:
       labels:
         app: staff-service
+        version: safe
     spec:
       containers:
       - name: staff-service
@@ -158,7 +135,31 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
-
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: staff-service-risky
+spec:
+  selector:
+    matchLabels:
+      app: staff-service
+  replicas: 2
+  template: # template for the pods
+    metadata:
+      labels:
+        app: staff-service
+        version: risky
+    spec:
+      containers:
+      - name: staff-service
+        image: richardchesterwood/istio-fleetman-staff-service:6-placeholder
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: production-microservice
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080        
 ---
 apiVersion: v1
 kind: Service
@@ -170,12 +171,11 @@ spec:
   # or maybe external users to connect to (eg browser)
   selector:
     app: webapp
-    
   ports:
     - name: http
       port: 80
       nodePort: 30080
-  type: NodePort    # after testing make it ClusterIp so that its not exposed and its inside the cluster  type: ClusterIP
+  type: NodePort
 ---
 apiVersion: v1
 kind: Service
