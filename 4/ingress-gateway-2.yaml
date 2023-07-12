@@ -27,11 +27,11 @@ spec:
     - route:
         - destination:
             host: fleetman-webapp
-            subset: v1
+            subset: original
           weight: 90
         - destination:
             host: fleetman-webapp
-            subset: v2
+            subset: experimental
           weight: 10
 ---
 kind: DestinationRule
@@ -43,8 +43,8 @@ spec:
   host: fleetman-webapp
   subsets:
     - labels:
-        version: v1
-      name: v1
+        version: original
+      name: original
     - labels:
-        version: v2
-      name: v2
+        version: experimental
+      name: experimental
