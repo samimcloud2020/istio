@@ -70,7 +70,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: webapp-v1
+  name: webapp-original
 spec:
   selector:
     matchLabels:
@@ -80,7 +80,7 @@ spec:
     metadata:
       labels:
         app: webapp
-        version: v1
+        version: original
     spec:
       containers:
       - name: webapp
@@ -93,7 +93,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: webapp-v2
+  name: webapp-experimental
 spec:
   selector:
     matchLabels:
@@ -103,7 +103,7 @@ spec:
     metadata:
       labels:
         app: webapp
-        version: v2
+        version: experimental
     spec:
       containers:
       - name: webapp
