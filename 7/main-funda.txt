@@ -1,4 +1,2 @@
-
-
-chrome browser(mod header extension) (x-my-header: canary)----> webapp(propagate header)------>other microservice propagate it-----> fleetman-staff-svc---> pod (risky)
+chrome browser(mod header extension) (x-my-header: canary)--via ingressgateway--> webapp(propagate header)------>other microservice propagate it-----> fleetman-staff-svc---> pod (risky)
                                                                                                                                                         ---> pod (safe)
