@@ -1,0 +1,9 @@
+--------------------------------------------Canary Release----------------------------------------------------------
+Canary release is a form of deployment where you want to divert a percentage of traffic to new version
+to test out the correctness before opening up to all users.
+
+---------------------------------------------DARK Release---------------------------------------------------------
+Dark release is when you want only specific users to be able to access the service.  
+
+I have decided that all user requests which carry extra header - “ x-my-header” with value as dark, would go to newly deployed risky pod. 
+Rest other requests, which do not carry this header, would continue on safe existing pods  
