@@ -21,21 +21,11 @@ spec:
   trafficPolicy:
     loadBalancer:
       consistentHash:
-        httpHeaderName: Cookie
-        useSourceIp: false
-      simple: ROUND_ROBIN
-    connectionPool:
-      tcp:
-        maxConnections: 100
+        httpCookie:
+          name: user
+          ttl: 0s
   subsets:
   - name: safe
     labels:
       version: safe
-    trafficPolicy:
-      loadBalancer:
-        consistentHash:
-          httpHeaderName: Cookie
-          useSourceIp: false
-        sticky:
-          cookie:
-            name: session-cookie
+  
