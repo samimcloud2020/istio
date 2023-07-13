@@ -1,0 +1,1 @@
+kubectl port-forward service/fleetman-webapp  --address 0.0.0.0   30080:80
