@@ -1,1 +1,6 @@
 samim@ip-172-31-27-156:~$ while true; do curl -H "my-header: 123456" -s http://18.205.234.80:30080/vehicle/City%20Truck | grep title; echo; done;
+
+
+
+
+samim@ip-172-31-27-156:~$ while true; do curl --cookie "name=user" -s http://18.205.234.80:30080/vehicle/City%20Truck | grep title; echo; done;
