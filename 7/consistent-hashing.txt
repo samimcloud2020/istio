@@ -1,0 +1,12 @@
+---------------------------------------------------ConsistentHashing------------------------------------------------------------------
+Consistent Hashing is a mechanism that will allow you to stick a request to a client by generating a hash internally. 
+So if a user requests user microservice and get response from user:v2 pod then in the subsequent requests will also be forwarded to that user:v2 pod.
+
+But here’s a catch. ConsistentHashing doesn’t work with weighted routing. Because, 
+we define hashing mechanism under trafficPolicy in DestinationRule Before generating hash the weighted routing already made sure which service to hit.
+One more thing, the underlying component of Istio, Envoy proxy so far doesn’t support weighted routing with consistent hashing. You can find detail in this github issue.
+
+So how do we achieve consistent hashing? We have to remove the weighted routing from virtual services and then declare consistentHash mechanism in the DestinationRule.
+
+Session affinity doesn't seem to apply to weighted subsets.
+--------------------------------------------------------------------------------------------------------------------------------------------------  
