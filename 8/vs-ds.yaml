@@ -1,22 +1,23 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: my-service
+  name: fleetman-staff-service
+  namespace: default
 spec:
   hosts:
-  - my-service
+  - fleetman-staff-service.default.svc.cluster.local
   http:
   - route:
     - destination:
-        host: my-service
-        subset: v1
+        host: fleetman-staff-service.default.svc.cluster.local
+        subset: safe
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: my-service
+  name: fleetman-staff-service
 spec:
-  host: my-service
+  host: fleetman-staff-service.default.svc.cluster.local
   trafficPolicy:
     loadBalancer:
       consistentHash:
@@ -27,9 +28,9 @@ spec:
       tcp:
         maxConnections: 100
   subsets:
-  - name: v1
+  - name: safe
     labels:
-      version: v1
+      version: safe
     trafficPolicy:
       loadBalancer:
         consistentHash:
