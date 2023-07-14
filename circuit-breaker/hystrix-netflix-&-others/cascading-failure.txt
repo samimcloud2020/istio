@@ -1,0 +1,46 @@
+In the event of cascading failure, the load continues to grow at a rapid rate, which means as new nodes are provisioned,
+they almost immediately get overloaded and start to fail as well. Often, the only way to recover from cascading failure is 
+by drastically reducing or turning off all traffic to the overloaded system.
+
+Once the system has recovered, we can incrementally ramp traffic back up. This usually requires manual intervention, 
+which is what makes recovery slow and difficult.
+
+Additionally, having to completely shut down your system can have a negative impact on your users and your business.
+
+-----------------------------------------------------------------------------------------------------------------------------
+-----------------------------How to Reduce the Risk of Cascading Failure------------------------------------------------------------
+On a large scale, it may be impossible to completely eliminate the risk of cascading failure, but there are steps
+we can take to lower the chances and ensure faster recovery.
+
+-------------------------------Server-side rate limits-------------------------------------------------------------
+Rate limiting is a way of regulating the amount of traffic being handled by your system. 
+Typically, servers establish rate limits per client (i.e., if a client sends more than N requests in a given time window, 
+those additional requests are dropped). This prevents any one client from going rogue and flooding the server with requests, taking down the whole service.
+
+While rate limits are an effective way of regulating system load, they are not perfect. 
+Usually, the sum of the rate limits for all the clients exceeds the ideal rate limit for the overall cluster. 
+This is because we assume that it should be very rare for all clients to start hitting their rate limits at the same time.
+
+Additionally, processing the rate limit is not free, and if the amount of incoming traffic increases sharply, 
+handling the sheer number of connections and returning a rate limit error for each request can still lead to cascading failure.
+
+---------------------------------------Client-side throttling------------------------------------------------------------------
+If we cannot rely solely on the server to ensure it does not get overloaded, the next logical step is to build some protection 
+into the clients. When a client starts to have its requests rejected due to rate limits, it can start to throttle its own outgoing traffic. 
+These requests will fail before hitting the server, thereby lowering the load and allowing it time to recover.
+
+One way to implement this is to maintain a metric on the client of its request rejection rate.
+Once the rejection rate in a given time window exceeds a certain threshold, the client starts 
+to drop some percentage of requests before sending them to the server. Once the time window expires,
+we can reset the rejection rate metric, which removes the throttling. Now, if the server has recovered and the rejections have stopped, 
+the client proceeds as normal and throttling is disabled. If the server is still overloaded, once the rejection rate crosses the threshold again, 
+throttling will kick in once more.
+
+Make sure to also keep a counter of the number of total requests in the time window to ensure you only start to throttle once the results
+are significant enough to indicate a real problem (i.e. one of two requests being rejected does not mean the server is necessarily overloaded,
+but 20 out of 50 requests being rejected indicates a need for throttling).
+
+Client-side throttling is an effective way to prevent cascading failure in distributed systems. 
+There are several metrics that can be used to decide when to throttle (rejection rate, success rate, average latency, etc.),
+and it is important to pick the appropriate one for your system.
+----------------------------------------------------------------------------------------------------------------------------------------------
