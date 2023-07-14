@@ -1,0 +1,41 @@
+back-pressure refers to the resistance or force opposing the desired flow of data through software.
+
+Suppose that the incoming flow rate of the data is greater than the outgoing flow rate. 
+There can be several reasons for this. 
+
+For example, perhaps the processing speed of the node is slow. 
+
+As the incoming rate is greater than the outgoing rate, pressure will be exerted on the node. This is called back-pressure.
+
+-----------------no back pressure-------------------------------------------------------
+incoming rate=20mbps----->processing node----------> outgoing rate=20mbps
+
+--------------------------backpressure as i/c rate > outgoing rate-------------------------------------
+incoming rate=100mbps----->processing node----------> outgoing rate=20mbps
+
+------------------------------------------------------------------------------------------------------------
+------------------------Techniques to exert back-pressure---------------------------------------------------
+Below, we discuss techniques that we can use to solve the problem of back-pressure in distributed systems.
+
+----------------------1. Send a message to caller to stop requests-----------------------------------
+If the callee is facing back-pressure, it can send a message to the caller to notify them about the back-pressure at the callee. 
+This is the most efficient solution for back-pressure.
+
+----------------------------2. Block the caller----------------------------------------------------
+Another technique to exert back-pressure is to block the caller. 
+If there is back-pressure, the callee can block callers. 
+
+In this case, the callers will get an error message. An advantage of this technique is that the callee will handle the error itself. 
+The callee will not have to send a message, as it is always stuck in back-pressure.
+
+----------------------------------------3. Drop requests---------------------------------------------------------------
+The requests from the caller are kept in a queue and the caller takes requests from this queue to process them. 
+The caller can drop requests from this queue in case of back-pressure. 
+The caller can drop the newest or the oldest requests, depending on the strategy chosen by the developer.
+
+-----------------------------------------4. Scale up the callee-----------------------------------------------------
+Another technique to solve back-pressure is to scale up the callee, which means to increase the processing power of the callee, 
+either by its replacement with a high-speed callee or by the addition of another callee. 
+
+Scaling will allow the callee to respond to the requests faster and thus prevent back-pressure.
+----------------------------------------------------------------------------------------------------------------------------------------------------
