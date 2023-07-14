@@ -1,0 +1,10 @@
+fortio runs at a specified query per second (qps) and records an histogram of execution time and calculates percentiles
+(e.g. p99 ie the response time such as 99% of the requests take less than that number (in seconds, SI unit)). 
+
+It can run for a set duration, for a fixed number of calls, or until interrupted (at a constant target QPS, or max speed/load per connection/thread).
+------------------------------------------------------------------------------------------------------------------------------------------------------
+For instance:
+
+docker run -p 8080:8080 -p 8079:8079 fortio/fortio server & # For the server
+docker run fortio/fortio load -logger-force-color http://www.google.com/           # For a test run, forcing color instead of JSON log output
+--------------------------------------------------------------------------------------------------------------------------------------------------------
