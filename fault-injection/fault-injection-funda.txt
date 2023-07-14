@@ -1,0 +1,25 @@
+----------------------------------Fault injection introduction-----------------------------------------------------------
+The resiliency of a system is derived from the resiliency of its parts: that every part of a system is able to handle a 
+certain number of errors or faults. Whether subsequent service unavailability, network latency or data availability issues,
+distributed systems are full of implicit non-functional requirements for the correspondent handling of errors.
+
+Fault injection is a system testing method which involves the deliberate introduction of faults and errors into a system. 
+It can be used to identify design or configuration weaknesses and to ensure that the system is able the handle faults and recover from error conditions. 
+Faults can be introduced with compile-time injection (modifying the source code of the software) or with runtime injection, in which software triggers 
+cause faults during specific scenarios.
+
+To protect a system from cascading failures caused by slow response or failing services, it’s good practice to use circuit breakers.
+
+----------------------------------------------------------------------------------------------------------------------
+---------------------------------------Fault injection in Istio--------------------------------------------------------------
+With Istio, failures can be injected at the application layer to test the resiliency of the services. 
+You can configure faults to be injected into requests that match specific conditions to simulate service failures and higher latency between services.
+Fault injection is part of Istio’s routing configuration and can be set in the fault field under an HTTP route of the VirtualService Istio custom resource.
+Faults include aborting HTTP requests from a downstream service, and/or delaying the proxying of requests. A fault rule must have either a delay or abort (or both).
+
+Delay can delay requests before forwarding, emulating various failures such as network issues, an overloaded upstream service, etc.
+
+Abort can abort HTTP request attempts and return error codes to a downstream service, giving the impression that the upstream service is faulty.
+
+Delay and abort faults are independent of one another, even if both are set to occur simultaneously.
+---------------------------------------------------------------------------------------------------------------------------------------------------
