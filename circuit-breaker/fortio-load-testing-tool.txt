@@ -7,6 +7,8 @@ For instance:
 
 docker run -p 8080:8080 -p 8079:8079 fortio/fortio server & # For the server
 docker run fortio/fortio load -logger-force-color http://www.google.com/           # For a test run, forcing color instead of JSON log output
+
+http://23.20.7.129:8080/fortio/
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 $ export FORTIO_POD=$(kubectl get pods -l app=fortio -o 'jsonpath={.items[0].metadata.name}')
 
