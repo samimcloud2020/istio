@@ -140,11 +140,11 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: staff-service-risky-version
+  name: staff-service-risky
 spec:
   selector:
     matchLabels:
-      app: staff-service-risky
+      app: staff-service
   replicas: 1
   template: # template for the pods
     metadata:
@@ -191,7 +191,8 @@ spec:
   ports:
     - name: http
       port: 8080
-  type: ClusterIP
+      nodePort: 32000
+  type: NodePort
 ---
 apiVersion: v1
 kind: Service
