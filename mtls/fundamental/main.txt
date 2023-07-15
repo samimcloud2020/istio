@@ -1,0 +1,12 @@
+--------------------------------Mutual TLS Migration--------------------------------------------------------------------------
+Istio automatically configures workload sidecars to use mutual TLS when calling other workloads. 
+
+By default, Istio configures the destination workloads using PERMISSIVE mode. 
+
+When PERMISSIVE mode is enabled, a service can accept both plaintext and mutual TLS traffic. 
+
+In order to only allow mutual TLS traffic, the configuration needs to be changed to STRICT mode.
+
+You can use the Grafana dashboard to check which workloads are still sending plaintext traffic to the workloads in PERMISSIVE mode 
+and choose to lock them down once the migration is done.
+
