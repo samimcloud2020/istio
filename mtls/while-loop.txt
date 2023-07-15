@@ -1,0 +1,1 @@
+samim@ip-172-31-27-156:~$ curl http://52.91.52.88:32000/vehicles/City%20Truck
