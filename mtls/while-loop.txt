@@ -1,1 +1,9 @@
 samim@ip-172-31-27-156:~$ curl http://52.91.52.88:32000/vehicles/City%20Truck
+
+
+samim@ip-172-31-27-156:~$ kubectl port-forward svc/fleetman-position-tracker    --address 0.0.0.0    32000:8080
+Forwarding from 0.0.0.0:32000 -> 8080
+
+
+samim@ip-172-31-27-156:~$ kubectl port-forward svc/kiali --address 0.0.0.0  -n istio-system 20001:20001
+Forwarding from 0.0.0.0:20001 -> 20001
