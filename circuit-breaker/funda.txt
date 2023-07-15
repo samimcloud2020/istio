@@ -5,4 +5,16 @@ This task shows you how to configure circuit breaking for connections, requests,
 Circuit breaking is an important pattern for creating resilient microservice applications. Circuit breaking
 allows you to write applications that limit the impact of failures, latency spikes, and other undesirable effects of network peculiarities.
 
------------------------------------------------------------------------------------------------------------------
+------------------------------------------------case 1-----------------------------------------------------------------
+
+MICROSERVICE1-------> MICROSERVICE2--------->MICROSERVICE3 ---------->[MICROSERVICE4 ---------POD(REPLICA-1) (STRUGGLING)
+                                                           ---------->[MICROSERVICE4 ---------POD(REPLICA-2) (GOOD)    
+
+SO CIRCUIT BREAKER IN MICROSERVICE4 NEED TO RECOVER POD(REPLICA-1). OR BREAK TO POD(REPLICA-1) AND SEND TRAFFIC TO POD(REPLICA-2).
+ITS GIVES TIME TO RECOVER POD(REPLICA-1).
+
+
+----------------------------------------------Case 2-------------------------------------------------------------------------
+if MICROSERVICE4 IS SINGLE POD then also you set circuit breaker
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
