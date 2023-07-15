@@ -1,0 +1,368 @@
+samim@ip-172-31-27-156:~$ kubectl port-forward service/fleetman-webapp  --address 0.0.0.0   30080:80
+Forwarding from 0.0.0.0:30080 -> 80
+
+
+
+samim@ip-172-31-27-156:~$ kubectl port-forward svc/kiali --address 0.0.0.0  -n istio-system 20001:20001
+Forwarding from 0.0.0.0:20001 -> 20001
+
+
+samim@ip-172-31-27-156:~/istio1/istio/circuit-breaker$ docker run -itd -p 8080:8080 -p 8079:8079 fortio/fortio server
+67ed0bd31ed46256e91e8e80cc363ac71d5d73d1c3522d85b3e1657f9286d981
+samim@ip-172-31-27-156:~/istio1/istio/circuit-breaker$ docker ps
+CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS          PORTS                                                                                     NAMES
+67ed0bd31ed4   fortio/fortio  "/usr/bin/fortio ser…"   15 seconds ago   Up 14 seconds   8078/tcp, 8081/tcp, 0.0.0.0:8079-8080->8079-8080/tcp, :::8079-8080->8079-8080/tcp   tender_ramanujan
+
+
+http://100.26.110.23:8080/fortio/
+
+
+samim@ip-172-31-27-156:~/istio1/istio/circuit-breaker$ while true; do curl http://100.26.110.23:30080/api/vehicles/driver/City%20Truck; echo; done;
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio1/istio/circuit-breaker$ export FORTIO_POD=$(kubectl get pods -l app=fortio -o 'jsonpath={.items[0].metadata.name}')
+samim@ip-172-31-27-156:~/istio1/istio/circuit-breaker$ kubectl exec "$FORTIO_POD" -c fortio -- /usr/bin/fortio curl -quiet http://100.26.110.23:30080/api/vehicles/driver/City%20Truck
+HTTP/1.1 200 OK
+Server: nginx/1.14.0
+Date: Sat, 15 Jul 2023 02:50:34 GMT
+Content-Type: text/plain;charset=UTF-8
+Content-Length: 85
+Connection: keep-alive
+x-envoy-upstream-service-time: 8
+
+{"name":"Pam Parry","photo":"https://rac-istio-course-images.s3.amazonaws.com/1.jpg"}
+
+
+-----------------------------Call the service with two concurrent connections (-c 2) and send 20 requests (-n 20):-------------------------------------
+In the DestinationRule settings, you specified maxConnections: 1 and http1MaxPendingRequests: 1. 
+These rules indicate that if you exceed more than one connection and request concurrently, 
+you should see some failures when the istio-proxy opens the circuit for further requests and connections.
+------------------------------------------------------------------------------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio1/istio/circuit-breaker$ kubectl exec "$FORTIO_POD" -c fortio -- /usr/bin/fortio load -c 2 -qps 0 -n 20 -loglevel Warning http://100.26.110.23:30080/api/vehicles/driver/City%20Truck
+03:04:02 I logger.go:183> Log level is now 3 Warning (was 2 Info)
+Fortio 1.54.2 running at 0 queries per second, 4->4 procs, for 20 calls: http://100.26.110.23:30080/api/vehicles/driver/City%20Truck
+Starting at max qps with 2 thread(s) [gomax 4] for exactly 20 calls (10 per thread + 0)
+03:04:02 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:04:04 W http_client.go:1058> [1] Non ok http code 500 (HTTP/1.1 500)
+Ended after 3.088743453s : 20 calls. qps=6.4751
+Aggregated Function Time : count 20 avg 0.27732863 +/- 0.8094 min 0.005320099 max 3.012486511 sum 5.54657256
+# range, mid point, percentile, count
+>= 0.0053201 <= 0.006 , 0.00566005 , 25.00, 5
+> 0.006 <= 0.007 , 0.0065 , 35.00, 2
+> 0.007 <= 0.008 , 0.0075 , 45.00, 2
+> 0.009 <= 0.01 , 0.0095 , 50.00, 1
+> 0.01 <= 0.011 , 0.0105 , 70.00, 4
+> 0.012 <= 0.014 , 0.013 , 75.00, 1
+> 0.014 <= 0.016 , 0.015 , 80.00, 1
+> 0.016 <= 0.018 , 0.017 , 85.00, 1
+> 0.02 <= 0.025 , 0.0225 , 90.00, 1
+> 2 <= 3 , 2.5 , 95.00, 1
+> 3 <= 3.01249 , 3.00624 , 100.00, 1
+# target 50% 0.01
+# target 75% 0.014
+# target 90% 0.025
+# target 99% 3.00999
+# target 99.9% 3.01224
+Error cases : count 2 avg 1.1877335 +/- 1.171 min 0.016825834 max 2.3586411800000002 sum 2.37546701
+# range, mid point, percentile, count
+>= 0.0168258 <= 0.018 , 0.0174129 , 50.00, 1
+> 2 <= 2.35864 , 2.17932 , 100.00, 1
+# target 50% 0.0168258
+# target 75% 2.17932
+# target 90% 2.28691
+# target 99% 2.35147
+# target 99.9% 2.35792
+# Socket and IP used for each connection:
+[0]   3 socket used, resolved to 100.26.110.23:30080, connection timing : count 3 avg 0.00019810767 +/- 2.26e-05 min 0.000170602 max 0.000225946 sum 0.000594323
+[1]   2 socket used, resolved to 100.26.110.23:30080, connection timing : count 2 avg 0.00018868 +/- 1.348e-05 min 0.000175199 max 0.000202161 sum 0.00037736
+Connection time (s) : count 5 avg 0.0001943366 +/- 2.001e-05 min 0.000170602 max 0.000225946 sum 0.000971683
+Sockets used: 5 (for perfect keepalive, would be 2)
+Uniform: false, Jitter: false, Catchup allowed: true
+IP addresses distribution:
+100.26.110.23:30080: 5
+Code 200 : 18 (90.0 %)   <--------------------------------90% code 200 means ok
+Code 500 : 2 (10.0 %)    <--------------------------------10% code 500 means fail
+Response Header Sizes : count 20 avg 176.4 +/- 58.8 min 0 max 196 sum 3528
+Response Body/Total Sizes : count 20 avg 297.8 +/- 50.4 min 281 max 450 sum 5956
+All done 20 calls (plus 0 warmup) 277.329 ms avg, 6.5 qps    <-----------------------20 calls 18 ok, 2 not ok
+---------------------------------Bring the number of concurrent connections up to 3:--------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio1/istio/circuit-breaker$ kubectl exec "$FORTIO_POD" -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://100.26.110.23:30080/api/vehicles/driver/City%20Truck
+03:07:40 I logger.go:183> Log level is now 3 Warning (was 2 Info)
+Fortio 1.54.2 running at 0 queries per second, 4->4 procs, for 30 calls: http://100.26.110.23:30080/api/vehicles/driver/City%20Truck
+Starting at max qps with 3 thread(s) [gomax 4] for exactly 30 calls (10 per thread + 0)
+03:07:40 W http_client.go:1058> [1] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:40 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:07:45 W http_client.go:1058> [2] Non ok http code 500 (HTTP/1.1 500)
+03:07:45 W http_client.go:1058> [2] Non ok http code 500 (HTTP/1.1 500)
+03:07:45 W http_client.go:1058> [2] Non ok http code 500 (HTTP/1.1 500)
+03:07:45 W http_client.go:1058> [2] Non ok http code 500 (HTTP/1.1 500)
+03:07:45 W http_client.go:1058> [2] Non ok http code 500 (HTTP/1.1 500)
+03:07:45 W http_client.go:1058> [2] Non ok http code 500 (HTTP/1.1 500)
+03:07:49 W http_client.go:1058> [1] Non ok http code 500 (HTTP/1.1 500)
+Ended after 9.510748263s : 30 calls. qps=3.1543
+Aggregated Function Time : count 30 avg 0.48992988 +/- 1.028 min 0.005273674 max 3.014241243 sum 14.6978964
+# range, mid point, percentile, count
+>= 0.00527367 <= 0.006 , 0.00563684 , 6.67, 2
+> 0.006 <= 0.007 , 0.0065 , 10.00, 1
+> 0.007 <= 0.008 , 0.0075 , 20.00, 3
+> 0.009 <= 0.01 , 0.0095 , 23.33, 1
+> 0.01 <= 0.011 , 0.0105 , 26.67, 1
+> 0.011 <= 0.012 , 0.0115 , 43.33, 5
+> 0.012 <= 0.014 , 0.013 , 53.33, 3
+> 0.014 <= 0.016 , 0.015 , 56.67, 1
+> 0.016 <= 0.018 , 0.017 , 63.33, 2
+> 0.018 <= 0.02 , 0.019 , 66.67, 1
+> 0.02 <= 0.025 , 0.0225 , 76.67, 3
+> 0.025 <= 0.03 , 0.0275 , 80.00, 1
+> 0.6 <= 0.7 , 0.65 , 83.33, 1
+> 1 <= 2 , 1.5 , 86.67, 1
+> 2 <= 3 , 2.5 , 90.00, 1
+> 3 <= 3.01424 , 3.00712 , 100.00, 3
+# target 50% 0.0133333
+# target 75% 0.0241667
+# target 90% 3
+# target 99% 3.01282
+# target 99.9% 3.0141
+Error cases : count 18 avg 0.2178506 +/- 0.6948 min 0.009818781 max 3.012802006 sum 3.9213108
+# range, mid point, percentile, count
+>= 0.00981878 <= 0.01 , 0.00990939 , 5.56, 1
+> 0.01 <= 0.011 , 0.0105 , 11.11, 1
+> 0.011 <= 0.012 , 0.0115 , 38.89, 5
+> 0.012 <= 0.014 , 0.013 , 55.56, 3
+> 0.014 <= 0.016 , 0.015 , 61.11, 1
+> 0.016 <= 0.018 , 0.017 , 72.22, 2
+> 0.018 <= 0.02 , 0.019 , 77.78, 1
+> 0.02 <= 0.025 , 0.0225 , 88.89, 2
+> 0.6 <= 0.7 , 0.65 , 94.44, 1
+> 3 <= 3.0128 , 3.0064 , 100.00, 1
+# target 50% 0.0133333
+# target 75% 0.019
+# target 90% 0.62
+# target 99% 3.0105
+# target 99.9% 3.01257
+# Socket and IP used for each connection:
+[0]  10 socket used, resolved to 100.26.110.23:30080, connection timing : count 10 avg 0.000241638 +/- 0.0001254 min 0.0001078 max 0.000498357 sum 0.00241638
+[1]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0001668218 +/- 4.237e-05 min 0.000116427 max 0.000231333 sum 0.000834109
+[2]   7 socket used, resolved to 100.26.110.23:30080, connection timing : count 7 avg 0.00021672071 +/- 0.0001098 min 0.00011158 max 0.000403401 sum 0.001517045
+Connection time (s) : count 22 avg 0.00021670609 +/- 0.0001106 min 0.0001078 max 0.000498357 sum 0.004767534
+Sockets used: 22 (for perfect keepalive, would be 3)
+Uniform: false, Jitter: false, Catchup allowed: true
+IP addresses distribution:
+100.26.110.23:30080: 22
+Code 200 : 12 (40.0 %)   <------------------------------------------------------12 call sucess
+Code 500 : 18 (60.0 %)   <------------------------------------------------------18 calls fails
+Response Header Sizes : count 30 avg 78.666667 +/- 96.35 min 0 max 199 sum 2360
+Response Body/Total Sizes : count 30 avg 383.13333 +/- 81.55 min 281 max 452 sum 11494
+All done 30 calls (plus 0 warmup) 489.930 ms avg, 3.2 qps   <----------------------------total 30 calls
+
+
+Now you start to see the expected circuit breaking behavior. Only 12% of the requests succeeded and the rest were trapped by circuit breaking:
+
+Code 200 : 12 (40.0 %)   <------------------------------------------------------12 call sucess
+Code 500 : 18 (60.0 %)   <------------------------------------------------------18 calls fails
+----------------------------------------Query the istio-proxy stats to see more:----------------------------------------------------------------------------
+
+samim@ip-172-31-27-156:~/istio1/istio/circuit-breaker$ kubectl exec "$FORTIO_POD" -c istio-proxy -- pilot-agent request GET stats | grep fleetman-staff-service  | grep pending
+cluster.outbound|8080||fleetman-staff-service.default.svc.cluster.local.circuit_breakers.default.remaining_pending: 1
+cluster.outbound|8080||fleetman-staff-service.default.svc.cluster.local.circuit_breakers.default.rq_pending_open: 0
+cluster.outbound|8080||fleetman-staff-service.default.svc.cluster.local.circuit_breakers.high.rq_pending_open: 0
+cluster.outbound|8080||fleetman-staff-service.default.svc.cluster.local.upstream_rq_pending_active: 0
+cluster.outbound|8080||fleetman-staff-service.default.svc.cluster.local.upstream_rq_pending_failure_eject: 0
+cluster.outbound|8080||fleetman-staff-service.default.svc.cluster.local.upstream_rq_pending_overflow: 0
+cluster.outbound|8080||fleetman-staff-service.default.svc.cluster.local.upstream_rq_pending_total: 0
+
+------------------------------------20 numbers of concurrent call, total 100 calls-------------------------------------
+samim@ip-172-31-27-156:~/istio1/istio/circuit-breaker$ kubectl exec "$FORTIO_POD" -c fortio -- /usr/bin/fortio load -c 20 -qps 0 -n 100 -loglevel Warning http://100.26.110.23:30080/api/vehicles/driver/City%20Truck
+03:18:14 I logger.go:183> Log level is now 3 Warning (was 2 Info)
+Fortio 1.54.2 running at 0 queries per second, 4->4 procs, for 100 calls: http://100.26.110.23:30080/api/vehicles/driver/City%20Truck
+Starting at max qps with 20 thread(s) [gomax 4] for exactly 100 calls (5 per thread + 0)
+03:18:14 W http_client.go:1058> [19] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [14] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [13] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [7] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [15] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [12] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [3] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [14] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [16] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [18] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [1] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [8] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [13] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [9] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [5] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [4] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [16] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [1] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [13] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [12] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [19] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [13] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [12] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [18] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [14] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [11] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [15] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [10] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [16] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [6] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [9] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [8] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [4] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [3] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [13] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [19] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [5] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [12] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [11] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [5] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [4] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [10] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [18] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [9] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [14] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [16] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [6] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [12] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [15] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [19] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [8] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [3] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [11] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [18] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [8] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [5] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [4] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [9] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [19] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [15] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [5] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [14] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [16] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [11] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [3] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [10] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [6] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [8] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [11] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [15] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [3] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [0] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [10] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [6] Non ok http code 500 (HTTP/1.1 500)
+03:18:14 W http_client.go:1058> [10] Non ok http code 500 (HTTP/1.1 500)
+03:18:16 W http_client.go:1058> [2] Non ok http code 500 (HTTP/1.1 500)
+03:18:17 E http_client.go:1039> [17] Read error for 100.26.110.23:30080 0 : read tcp 10.244.0.34:34734->100.26.110.23:30080: i/o timeout
+03:18:17 E http_client.go:1039> [7] Read error for 100.26.110.23:30080 0 : read tcp 10.244.0.34:35004->100.26.110.23:30080: i/o timeout
+Ended after 3.110881118s : 100 calls. qps=32.145
+Aggregated Function Time : count 100 avg 0.16484791 +/- 0.4675 min 0.005083832 max 3.004585837 sum 16.4847915
+# range, mid point, percentile, count
+>= 0.00508383 <= 0.006 , 0.00554192 , 6.00, 6
+> 0.006 <= 0.007 , 0.0065 , 8.00, 2
+> 0.011 <= 0.012 , 0.0115 , 10.00, 2
+> 0.012 <= 0.014 , 0.013 , 11.00, 1
+> 0.014 <= 0.016 , 0.015 , 12.00, 1
+> 0.02 <= 0.025 , 0.0225 , 14.00, 2
+> 0.025 <= 0.03 , 0.0275 , 15.00, 1
+> 0.03 <= 0.035 , 0.0325 , 18.00, 3
+> 0.035 <= 0.04 , 0.0375 , 21.00, 3
+> 0.04 <= 0.045 , 0.0425 , 23.00, 2
+> 0.045 <= 0.05 , 0.0475 , 26.00, 3
+> 0.05 <= 0.06 , 0.055 , 36.00, 10
+> 0.06 <= 0.07 , 0.065 , 41.00, 5
+> 0.07 <= 0.08 , 0.075 , 48.00, 7
+> 0.08 <= 0.09 , 0.085 , 54.00, 6
+> 0.09 <= 0.1 , 0.095 , 63.00, 9
+> 0.1 <= 0.12 , 0.11 , 79.00, 16
+> 0.12 <= 0.14 , 0.13 , 86.00, 7
+> 0.14 <= 0.16 , 0.15 , 89.00, 3
+> 0.16 <= 0.18 , 0.17 , 91.00, 2
+> 0.18 <= 0.2 , 0.19 , 94.00, 3
+> 0.2 <= 0.25 , 0.225 , 95.00, 1
+> 0.25 <= 0.3 , 0.275 , 97.00, 2
+> 2 <= 3 , 2.5 , 98.00, 1
+> 3 <= 3.00459 , 3.00229 , 100.00, 2
+# target 50% 0.0833333
+# target 75% 0.115
+# target 90% 0.17
+# target 99% 3.00229
+# target 99.9% 3.00436
+Error cases : count 82 avg 0.19419608 +/- 0.5113 min 0.014235897 max 3.004585837 sum 15.9240782
+# range, mid point, percentile, count
+>= 0.0142359 <= 0.016 , 0.0151179 , 1.22, 1
+> 0.02 <= 0.025 , 0.0225 , 3.66, 2
+> 0.025 <= 0.03 , 0.0275 , 4.88, 1
+> 0.03 <= 0.035 , 0.0325 , 7.32, 2
+> 0.035 <= 0.04 , 0.0375 , 10.98, 3
+> 0.04 <= 0.045 , 0.0425 , 13.41, 2
+> 0.045 <= 0.05 , 0.0475 , 14.63, 1
+> 0.05 <= 0.06 , 0.055 , 25.61, 9
+> 0.06 <= 0.07 , 0.065 , 31.71, 5
+> 0.07 <= 0.08 , 0.075 , 37.80, 5
+> 0.08 <= 0.09 , 0.085 , 45.12, 6
+> 0.09 <= 0.1 , 0.095 , 56.10, 9
+> 0.1 <= 0.12 , 0.11 , 75.61, 16
+> 0.12 <= 0.14 , 0.13 , 84.15, 7
+> 0.14 <= 0.16 , 0.15 , 86.59, 2
+> 0.16 <= 0.18 , 0.17 , 89.02, 2
+> 0.18 <= 0.2 , 0.19 , 92.68, 3
+> 0.2 <= 0.25 , 0.225 , 93.90, 1
+> 0.25 <= 0.3 , 0.275 , 96.34, 2
+> 2 <= 3 , 2.5 , 97.56, 1
+> 3 <= 3.00459 , 3.00229 , 100.00, 2
+# target 50% 0.0944444
+# target 75% 0.119375
+# target 90% 0.185333
+# target 99% 3.00271
+# target 99.9% 3.0044
+# Socket and IP used for each connection:
+[0]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0002057364 +/- 0.0002201 min 7.2791e-05 max 0.000644594 sum 0.001028682
+[1]   2 socket used, resolved to 100.26.110.23:30080, connection timing : count 2 avg 0.0003883815 +/- 0.0002491 min 0.000139276 max 0.000637487 sum 0.000776763
+[2]   2 socket used, resolved to 100.26.110.23:30080, connection timing : count 2 avg 0.000261006 +/- 0.0001332 min 0.00012785 max 0.000394162 sum 0.000522012
+[3]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0001403904 +/- 4.443e-05 min 7.4454e-05 max 0.000209273 sum 0.000701952
+[4]   4 socket used, resolved to 100.26.110.23:30080, connection timing : count 4 avg 0.00026296575 +/- 0.0002236 min 6.5631e-05 max 0.00062825 sum 0.001051863
+[5]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.000323726 +/- 0.0003553 min 0.000108156 max 0.001027862 sum 0.00161863
+[6]   4 socket used, resolved to 100.26.110.23:30080, connection timing : count 4 avg 0.00039903925 +/- 0.000479 min 8.6423e-05 max 0.001227702 sum 0.001596157
+[7]   3 socket used, resolved to 100.26.110.23:30080, connection timing : count 3 avg 0.0015615457 +/- 0.002012 min 0.000110076 max 0.004406933 sum 0.004684637
+[8]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0002194824 +/- 0.0001627 min 7.8456e-05 max 0.000529522 sum 0.001097412
+[9]   4 socket used, resolved to 100.26.110.23:30080, connection timing : count 4 avg 0.00026337225 +/- 0.0001106 min 0.000133592 max 0.000437923 sum 0.001053489
+[10]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0005985398 +/- 0.0002241 min 0.000311265 max 0.000877095 sum 0.002992699
+[11]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.000293192 +/- 0.0002111 min 0.000111263 max 0.000682027 sum 0.00146596
+[12]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0002213738 +/- 0.0001664 min 8.1052e-05 max 0.000545697 sum 0.001106869
+[13]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0008359226 +/- 0.001101 min 0.000148063 max 0.003029569 sum 0.004179613
+[14]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0011702458 +/- 0.001889 min 7.2426e-05 max 0.004930961 sum 0.005851229
+[15]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0003395522 +/- 0.0003105 min 6.4282e-05 max 0.000892212 sum 0.001697761
+[16]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0002668644 +/- 0.0001005 min 8.4373e-05 max 0.000389267 sum 0.001334322
+[17]   2 socket used, resolved to 100.26.110.23:30080, connection timing : count 2 avg 0.0002141155 +/- 5.041e-05 min 0.000163704 max 0.000264527 sum 0.000428231
+[18]   4 socket used, resolved to 100.26.110.23:30080, connection timing : count 4 avg 0.000385387 +/- 0.000297 min 0.000117662 max 0.000879283 sum 0.001541548
+[19]   5 socket used, resolved to 100.26.110.23:30080, connection timing : count 5 avg 0.0003026476 +/- 0.0003886 min 7.7233e-05 max 0.001079248 sum 0.001513238
+Connection time (s) : count 85 avg 0.00042638902 +/- 0.0007677 min 6.4282e-05 max 0.004930961 sum 0.036243067
+Sockets used: 85 (for perfect keepalive, would be 20)
+Uniform: false, Jitter: false, Catchup allowed: true
+IP addresses distribution:
+100.26.110.23:30080: 85
+Code  -1 : 2 (2.0 %)
+Code 200 : 18 (18.0 %)    <------------------------18% call sucess
+Code 500 : 80 (80.0 %)    <----------------------80% calls fail
+Response Header Sizes : count 100 avg 35.35 +/- 75.45 min 0 max 197 sum 3535
+Response Body/Total Sizes : count 100 avg 411.51 +/- 87.49 min 0 max 453 sum 41151
+All done 100 calls (plus 0 warmup) 164.848 ms avg, 32.1 qps
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
