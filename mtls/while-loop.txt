@@ -7,3 +7,8 @@ Forwarding from 0.0.0.0:32000 -> 8080
 
 samim@ip-172-31-27-156:~$ kubectl port-forward svc/kiali --address 0.0.0.0  -n istio-system 20001:20001
 Forwarding from 0.0.0.0:20001 -> 20001
+
+
+samim@ip-172-31-27-156:~/istio1/istio/mtls$ kubectl port-forward svc/grafana  --address 0.0.0.0  -n istio-system 31002:3000
+Forwarding from 0.0.0.0:31002 -> 3000
+
