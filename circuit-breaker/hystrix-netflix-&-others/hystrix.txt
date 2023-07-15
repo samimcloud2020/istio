@@ -11,8 +11,9 @@ all of which improve the system’s overall resiliency.
 ----------------------------------------------------------------------------------------------------------------------------------------------
 Build
 To build:
+java install # apt update && apt install openjdk-11-jdk -y
 
-$ git clone git@github.com:Netflix/Hystrix.git
+samim@ip-172-31-27-156:~$ git clone https://github.com/Netflix/Hystrix.git
 $ cd Hystrix/
 $ ./gradlew build
 
