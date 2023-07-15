@@ -1,4 +1,5 @@
-#################Lock down to mutual TLS by namespace############################
+#################Lock down to mutual TLS by namespace#####################################
+####This will enforce that only traffic that will TLS , between Envoy proxies#############
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication
 metadata:
