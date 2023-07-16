@@ -1,0 +1,14 @@
+----------------------------------------Integration Modes----------------------------------------------------------------------------------------
+In “standalone” mode, the third party ingress is directly sending to backends. In this case, the backends presumably have Istio sidecars injected.
+
+Client------>Third Party Ingress-------->Backend
+
+In this mode, things mostly just work. Clients in a service mesh do not need to be aware that the backend they are connecting to has a sidecar.
+However, the ingress will not use mTLS, which may lead to undesirable behavior. As a result, most of the configuration for this setup is around enabling mTLS.
+
+In “chained” mode, we use both the third party ingress and Istio’s own Gateway in sequence.
+This can be useful when you want the functionality of both layers. In particular, this is useful with managed cloud load balancers,
+which have features like global addresses and managed certificates.
+
+Client------->Third Party Ingress------>Istio Gateway--------->Backend
+----------------------------------------------------------------------------------------------------------------------------------------------------
