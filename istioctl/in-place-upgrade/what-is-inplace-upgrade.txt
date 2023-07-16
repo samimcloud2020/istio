@@ -1,0 +1,17 @@
+pod  with envoy proxy (v17)-------point to --------istiod(v17)
+
+during upgrade
+new istiod(v18) created.
+
+
+and now pod with envoy proxy (v17) point to istiod(v17) and istiod(v18).
+
+pod  with envoy proxy (v17)-------point to --------istiod(v17)
+                                           --------istiod(v18)
+
+next istiod(v17) removed.
+
+but still pod with envoy proxy(v17) persist.
+
+so need to restart deployment and pod to make v18.
+
