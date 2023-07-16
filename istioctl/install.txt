@@ -45,5 +45,46 @@ istiod-dd8fd669c-nbpjf                  1/1     Running   0          76s
 samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl -n istio-system get IstioOperator installed-state -o yaml > installed-state.yaml
 
 
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl profile list
+Istio configuration profiles:
+    ambient
+    default
+    demo
+    empty
+    external
+    minimal
+    openshift
+    preview
+    remote
+
+
+
+----------------------------------You can view the configuration settings of a profile.-------------------------------------
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl profile dump demo
+
+
+----------------------------------------------------------------------------------------------------------------------------
+You can show differences between the default and demo profiles using these commands:
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl profile diff default demo
+
+---------------------------------------------------------------------------------------------------------------------------
+--------------------------Generate a manifest before installation----------------------------------------------------------
+$istioctl manifest generate > generated-manifest.yaml
+
+--------------------------------------------Uninstall Istio--------------------------------------------------------------------------------
+
+$istioctl uninstall --purge
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
 
 
