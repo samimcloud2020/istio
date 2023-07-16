@@ -1,3 +1,6 @@
+------------------canary upgrade(rolling upgrade)----------------------------------------------------------------------------
+
+
 samim@ip-172-31-27-156:~$ minikube delete
 * Deleting "minikube" in docker ...
 * Deleting container "minikube" ...
