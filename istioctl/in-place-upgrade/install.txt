@@ -1,0 +1,134 @@
+samim@ip-172-31-27-156:~$ wget https://storage.googleapis.com/istio-release/releases/1.17.4/istio-1.17.4-linux-amd64.tar.gz
+
+samim@ip-172-31-27-156:~$ tar -zxvf istio-1.17.4-linux-amd64.tar.gz
+
+samim@ip-172-31-27-156:~$ ls
+ istio-1.17.4    istio-1.18.0  istio-1.18.1  
+ 
+samim@ip-172-31-27-156:~$ cd istio-1.17.4
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ export PATH=$PWD/bin:$PATH
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ istioctl install --set profile=demo -y
+✔ Istio core installed                                                                                                                                                      
+✔ Istiod installed                                                                                                                                                          
+✔ Egress gateways installed                                                                                                                                                 
+✔ Ingress gateways installed                                                                                                                                                
+✔ Installation complete                                                                                                                                                     Making this installation the default for injection and validation.
+
+Thank you for installing Istio 1.17.  Please take a few minutes to tell us about your install/upgrade experience!  https://forms.gle/hMHGiwZHPU7UQRWe9
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ istioctl version
+client version: 1.17.4
+control plane version: 1.17.4
+data plane version: 1.17.4 (2 proxies)
+
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ k get pod -n istio-system
+NAME                                    READY   STATUS    RESTARTS   AGE
+istio-egressgateway-77b9b5d5c6-8659w    1/1     Running   0          3m33s
+istio-ingressgateway-6949467b44-cmrk7   1/1     Running   0          3m33s
+istiod-dd49f7c86-64gl6                  1/1     Running   0          3m39s
+
+samim@ip-172-31-27-156:~$ k apply -f app.yaml
+
+samim@ip-172-31-27-156:~$ k apply -f gateway.yaml
+gateway.networking.istio.io/http-ingress-gateway created
+virtualservice.networking.istio.io/fleetman-webapp-vs created
+destinationrule.networking.istio.io/fleetman-webapp-ds created
+
+------------------------------------------------------------------------------------------------------------------------
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ cd ..
+samim@ip-172-31-27-156:~$ ls
+istio-1.17.4   istio-1.18.0  istio-1.18.1 
+
+-------------------------let go to istio-1.18.1 (as we want upgrade to 1.18.1)-----------------------------------
+
+Download the new Istio release and change directory to the new release directory.
+
+Ensure that your Kubernetes configuration points to the cluster to upgrade:
+samim@ip-172-31-27-156:~$ cd istio-1.18.1
+samim@ip-172-31-27-156:~/istio-1.18.1$ 
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl config view
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /home/samim/.minikube/ca.crt
+    extensions:
+    - extension:
+        last-update: Sun, 16 Jul 2023 13:27:38 UTC
+        provider: minikube.sigs.k8s.io
+        version: v1.30.1
+      name: cluster_info
+    server: https://192.168.49.2:8443
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    extensions:
+    - extension:
+        last-update: Sun, 16 Jul 2023 13:27:38 UTC
+        provider: minikube.sigs.k8s.io
+        version: v1.30.1
+      name: context_info
+    namespace: default
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: /home/samim/.minikube/profiles/minikube/client.crt
+    client-key: /home/samim/.minikube/profiles/minikube/client.key
+
+
+
+    Ensure that the upgrade is compatible with your environment.
+
+    samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl x precheck
+✔ No issues found when checking the cluster. Istio is safe to install or upgrade!
+  To get started, check out https://istio.io/latest/docs/setup/getting-started/
+
+  -------------------Begin the upgrade by running this command:-----------------------------------------------------------
+  samim@ip-172-31-27-156:~/istio-1.18.1$ export PATH=$PWD/bin:$PATH
+  
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl upgrade 
+WARNING: Istio control planes installed: 1.17.4.
+WARNING: A newer installed version of Istio has been detected. Running this command will overwrite it.
+This will install the Istio 1.18.1 default profile with ["Istio core" "Istiod" "Ingress gateways"] components into the cluster. Proceed? (y/N) y
+✔ Istio core installed                                                                                                                                                      
+✔ Istiod installed                                                                                                                                                          
+✔ Ingress gateways installed                                                                                                                                                
+✔ Installation complete                                                                                
+Making this installation the default for injection and validation.
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl version
+client version: 1.18.1
+control plane version: 1.18.1
+data plane version: 1.18.1 (1 proxies)
+
+-----------------------------------------------------------------------------------------------------------------------------
+istioctl will in-place upgrade the Istio control plane and gateways to the new version and indicate the completion status.
+
+
+
+After istioctl completes the upgrade, you must manually update the Istio data plane by restarting any pods with Istio sidecars:
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl rollout restart deployment
+deployment.apps/api-gateway restarted
+deployment.apps/position-simulator restarted
+deployment.apps/position-tracker restarted
+deployment.apps/staff-service-risky restarted
+deployment.apps/staff-service-safe restarted
+deployment.apps/vehicle-telemetry restarted
+deployment.apps/webapp restarted
+
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
