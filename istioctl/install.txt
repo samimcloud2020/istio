@@ -1,0 +1,49 @@
+samim@ip-172-31-27-156:~/istio-1.18.1$ wget https://github.com/istio/istio/releases/download/1.18.1/istio-1.18.1-linux-amd64.tar.gz
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ tar -zxvf istio-1.18.1-linux-amd64.tar.gz
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ cd istio-1.18.1
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ export PATH=$PWD/bin:$PATH
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ minikube start --cpus 4 --memory 6000
+* minikube v1.30.1 on Ubuntu 22.04
+* Automatically selected the docker driver
+* Using Docker driver with root privileges
+* Starting control plane node minikube in cluster minikube
+* Pulling base image ...
+* Creating docker container (CPUs=4, Memory=6000MB) ...
+* Preparing Kubernetes v1.26.3 on Docker 23.0.2 ...
+  - Generating certificates and keys ...
+  - Booting up control plane ...
+  - Configuring RBAC rules ...
+* Configuring bridge CNI (Container Networking Interface) ...
+  - Using image gcr.io/k8s-minikube/storage-provisioner:v5
+* Verifying Kubernetes components...
+* Enabled addons: storage-provisioner, default-storageclass
+* Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl install --set profile=demo -y
+✔ Istio core installed                                                                                                                                                      
+✔ Istiod installed                                                                                                                                                          
+✔ Egress gateways installed                                                                                                                                                 
+✔ Ingress gateways installed                                                                                                                                                
+✔ Installation complete     
+Making this installation the default for injection and validation.
+
+
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k get po -n istio-system
+NAME                                    READY   STATUS    RESTARTS   AGE
+istio-egressgateway-c7df4695c-8bs2k     1/1     Running   0          70s
+istio-ingressgateway-65bc5d57f9-brbs6   1/1     Running   0          70s
+istiod-dd8fd669c-nbpjf                  1/1     Running   0          76s
+
+---------------The default profile is a good starting point for establishing a production environment-------------------
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl -n istio-system get IstioOperator installed-state -o yaml > installed-state.yaml
+
+
+
+
