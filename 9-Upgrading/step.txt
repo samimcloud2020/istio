@@ -1,0 +1,308 @@
+samim@ip-172-31-27-156:~$ minikube delete
+* Deleting "minikube" in docker ...
+* Deleting container "minikube" ...
+* Removing /home/samim/.minikube/machines/minikube ...
+* Removed all traces of the "minikube" cluster.
+
+
+samim@ip-172-31-27-156:~$ ls
+  istio-1.17.4                     istio-1.18.0           istio-1.18.1  
+---------------------------Canary Upgrades----------------------------------------------------------------------------
+Upgrading Istio can be done by first running a canary deployment of the new control plane, allowing you to monitor the effect of the upgrade with
+a small percentage of the workloads before migrating all of the traffic to the new version. This is much safer than doing an in-place upgrade 
+and is the recommended upgrade method.
+
+When installing Istio, the revision installation setting can be used to deploy multiple independent control planes at the same time. 
+A canary version of an upgrade can be started by installing the new Istio version’s control plane next to the old one, using a different revision setting.
+Each revision is a full Istio control plane implementation with its own Deployment, Service, etc.
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio-1.17.4$ minikube start --cpus 4 --memory 6000
+
+samim@ip-172-31-27-156:~$ cd istio-1.17.4
+samim@ip-172-31-27-156:~/istio-1.17.4$ ls
+LICENSE  README.md  bin  manifest.yaml  manifests  samples  tools
+samim@ip-172-31-27-156:~/istio-1.17.4$  export PATH=$PWD/bin:$PATH
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ istioctl install --set profile=demo  --set revision=1-17 -y
+✔ Istio core installed                                                                                                                                                      
+✔ Istiod installed                                                                                                                                                          
+✔ Egress gateways installed                                                                                                                                                 
+✔ Ingress gateways installed                                                                                                                                                
+✔ Installation complete                                                                                                                                                     Making this installation the default for injection and validation.
+
+Thank you for installing Istio 1.17. 
+
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ k get po -n istio-system
+NAME                                   READY   STATUS    RESTARTS   AGE
+istio-egressgateway-66d7777c6-778zc    1/1     Running   0          55s
+istio-ingressgateway-64bd6bc4b-hdqdz   1/1     Running   0          55s
+istiod-1-17-74b85f6f5-ngfxm            1/1     Running   0          63s <---------------------------------see label 1-17
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ cat  label-target-istio-version.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio.io/rev: 1-17
+  name: default
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ k apply -f   label-target-istio-version.yaml <----after this app-stack you deploy
+
+
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ k apply -f app.yaml
+deployment.apps/position-simulator created
+deployment.apps/position-tracker created
+deployment.apps/api-gateway created
+deployment.apps/webapp created
+deployment.apps/vehicle-telemetry created
+deployment.apps/staff-service created
+deployment.apps/staff-service-risky-version created
+service/fleetman-webapp created
+service/fleetman-position-tracker created
+service/fleetman-api-gateway created
+service/fleetman-vehicle-telemetry created
+service/fleetman-staff-service created
+samim@ip-172-31-27-156:~/istio-1.17.4$ k apply -f gateway.yaml
+gateway.networking.istio.io/ingress-gateway-configuration created
+virtualservice.networking.istio.io/fleetman-webapp created
+
+
+samim@ip-172-31-27-156:~/istio-1.17.4$ cat  label-target-istio-version.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio.io/rev: 1-17
+  name: default
+  
+samim@ip-172-31-27-156:~/istio-1.17.4$ istioctl proxy-status
+NAME                                                     CLUSTER        CDS        LDS        EDS        RDS          ECDS         ISTIOD                          VERSION
+api-gateway-57b8dc6b6d-pd9sv.default                     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm     1.17.4
+istio-egressgateway-66d7777c6-778zc.istio-system         Kubernetes     SYNCED     SYNCED     SYNCED     NOT SENT     NOT SENT     istiod-1-17-74b85f6f5-ngfxm     1.17.4
+istio-ingressgateway-64bd6bc4b-hdqdz.istio-system        Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm     1.17.4
+position-simulator-d76977c-2vggb.default                 Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm     1.17.4
+position-tracker-5fc869955f-z7zz8.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm     1.17.4
+staff-service-549787d74-bcp54.default                    Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm     1.17.4
+staff-service-risky-version-67fc49944c-xwzpw.default     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm     1.17.4
+vehicle-telemetry-5b8cb65d5-msmj9.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm     1.17.4
+webapp-5c79796df5-zpqwr.default                          Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm     1.17.4
+
+
+-----------------------------------------------now time to create a new controlplane(istiod) for new revision---------------------------------
+samim@ip-172-31-27-156:~/istio-1.17.4$ cd ..
+
+samim@ip-172-31-27-156:~$ ls
+  istio-1.17.4                     istio-1.18.0   istio-1.18.1  
+  
+samim@ip-172-31-27-156:~$ cd istio-1.18.1
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ ls
+LICENSE  README.md  bin  generated-manifest.yaml  installed-state.yaml  manifest.yaml  manifests  samples  tools
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ export PATH=$PWD/bin:$PATH
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl install --set profile=demo  --set revision=1-18 -y
+WARNING: Istio is being upgraded from 1.17.4 -> 1.18.1.
+WARNING: Before upgrading, you may wish to use 'istioctl analyze' to check for IST0002 and IST0135 deprecation warnings.
+✔ Istio core installed                                                                                                                                                      
+✔ Istiod installed                                                                                                                                                          
+✔ Egress gateways installed                                                                                                                                                 
+✔ Ingress gateways installed                                                                                                                                                
+✔ Installation complete                                                                                                                                                     samim@ip-172-31-27-156:~/istio-1.18.1$ k get po
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k get po -n istio-system
+NAME                                    READY   STATUS    RESTARTS   AGE
+istio-egressgateway-84d8fd9b8f-ndq8q    1/1     Running   0          27s
+istio-ingressgateway-75968b946c-ccwzz   1/1     Running   0          27s
+istiod-1-17-74b85f6f5-ngfxm             1/1     Running   0          14m <-------istiod (control plane 1-17 revision), where all app pod working.
+istiod-1-18-78f7597c75-pjl2c            1/1     Running   0          31s <-------istiod (control plane 1-18 revision), where we check one by one pod and if ok then run.
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl proxy-status
+NAME                                                     CLUSTER        CDS        LDS        EDS        RDS          ECDS         ISTIOD                           VERSION
+api-gateway-57b8dc6b6d-pd9sv.default                     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+istio-egressgateway-84d8fd9b8f-ndq8q.istio-system        Kubernetes     SYNCED     SYNCED     SYNCED     NOT SENT     NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+istio-ingressgateway-75968b946c-ccwzz.istio-system       Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+position-simulator-d76977c-2vggb.default                 Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+position-tracker-5fc869955f-z7zz8.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+staff-service-549787d74-bcp54.default                    Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+staff-service-risky-version-67fc49944c-xwzpw.default     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+vehicle-telemetry-5b8cb65d5-msmj9.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+webapp-5c79796df5-zpqwr.default                          Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ cat  label-target-istio-version.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio.io/rev: 1-18    <-see label 1-18 set and after apply app pod still in istiod(1-17) and now need to delete one by one pod so it points to istiod(1-18)
+  name: default
+
+  
+samim@ip-172-31-27-156:~/istio-1.18.1$ k apply -f   label-target-istio-version.yaml
+namespace/default configured
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl proxy-status
+NAME                                                     CLUSTER        CDS        LDS        EDS        RDS          ECDS         ISTIOD                           VERSION
+api-gateway-57b8dc6b6d-pd9sv.default                     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+istio-egressgateway-84d8fd9b8f-ndq8q.istio-system        Kubernetes     SYNCED     SYNCED     SYNCED     NOT SENT     NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+istio-ingressgateway-75968b946c-ccwzz.istio-system       Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+position-simulator-d76977c-2vggb.default                 Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+position-tracker-5fc869955f-z7zz8.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+staff-service-549787d74-bcp54.default                    Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+staff-service-risky-version-67fc49944c-xwzpw.default     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+vehicle-telemetry-5b8cb65d5-msmj9.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+webapp-5c79796df5-8lvd2.default                          Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete pod webapp-5c79796df5-8lvd2
+pod "webapp-5c79796df5-8lvd2" deleted
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl proxy-status
+NAME                                                     CLUSTER        CDS        LDS        EDS        RDS          ECDS         ISTIOD                           VERSION
+api-gateway-57b8dc6b6d-pd9sv.default                     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+istio-egressgateway-84d8fd9b8f-ndq8q.istio-system        Kubernetes     SYNCED     SYNCED     SYNCED     NOT SENT     NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+istio-ingressgateway-75968b946c-ccwzz.istio-system       Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+position-simulator-d76977c-2vggb.default                 Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+position-tracker-5fc869955f-z7zz8.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+staff-service-549787d74-bcp54.default                    Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+staff-service-risky-version-67fc49944c-xwzpw.default     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+vehicle-telemetry-5b8cb65d5-msmj9.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+webapp-5c79796df5-nfng9.default                          Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+
+
+see webapp pod now points to istiod(1-18).
+
+if you check webapp pod(1-18), not work properly, then you back it to 1-17 ?   how ?  
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ cat  label-target-istio-version.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio.io/rev: 1-17   <-----------------------------
+  name: default
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k apply -f label-target-istio-version.yaml
+namespace/default configured
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete pod webapp-5c79796df5-s89nj
+pod "webapp-5c79796df5-s89nj" deleted
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl proxy-status
+NAME                                                     CLUSTER        CDS        LDS        EDS        RDS          ECDS         ISTIOD                           VERSION
+api-gateway-57b8dc6b6d-pd9sv.default                     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+istio-egressgateway-84d8fd9b8f-ndq8q.istio-system        Kubernetes     SYNCED     SYNCED     SYNCED     NOT SENT     NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+istio-ingressgateway-75968b946c-ccwzz.istio-system       Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+position-simulator-d76977c-2vggb.default                 Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+position-tracker-5fc869955f-z7zz8.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+staff-service-549787d74-bcp54.default                    Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+staff-service-risky-version-67fc49944c-xwzpw.default     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+vehicle-telemetry-5b8cb65d5-msmj9.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+webapp-5c79796df5-gp84m.default                          Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-17-74b85f6f5-ngfxm      1.17.4
+
+now see again its back to 1-17 istiod control plane.
+
+--------------------------------------------------let say test fine ok and move one by one all pod to istiod 1-18----------------------
+samim@ip-172-31-27-156:~/istio-1.18.1$ cat  label-target-istio-version.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio.io/rev: 1-18
+  name: default
+  
+samim@ip-172-31-27-156:~/istio-1.18.1$ k apply -f   label-target-istio-version.yaml
+namespace/default configured
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k get po
+NAME                                           READY   STATUS    RESTARTS   AGE
+api-gateway-57b8dc6b6d-pd9sv                   2/2     Running   0          22m
+position-simulator-d76977c-2vggb               2/2     Running   0          22m
+position-tracker-5fc869955f-z7zz8              2/2     Running   0          22m
+staff-service-549787d74-bcp54                  2/2     Running   0          22m
+staff-service-risky-version-67fc49944c-xwzpw   2/2     Running   0          22m
+vehicle-telemetry-5b8cb65d5-msmj9              2/2     Running   0          22m
+webapp-5c79796df5-gp84m                        2/2     Running   0          2m24s
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete po webapp-5c79796df5-gp84m
+pod "webapp-5c79796df5-gp84m" deleted
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete po vehicle-telemetry-5b8cb65d5-msmj9
+pod "vehicle-telemetry-5b8cb65d5-msmj9" deleted
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete po staff-service-risky-version-67fc49944c-xwzpw
+pod "staff-service-risky-version-67fc49944c-xwzpw" deleted
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete po staff-service-549787d74-bcp54
+pod "staff-service-549787d74-bcp54" deleted
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete po position-tracker-5fc869955f-z7zz8
+pod "position-tracker-5fc869955f-z7zz8" deleted
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete po position-simulator-d76977c-2vggb
+pod "position-simulator-d76977c-2vggb" deleted
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete po api-gateway-57b8dc6b6d-pd9sv
+pod "api-gateway-57b8dc6b6d-pd9sv" deleted
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl proxy-status
+NAME                                                     CLUSTER        CDS        LDS        EDS        RDS          ECDS         ISTIOD                           VERSION
+api-gateway-57b8dc6b6d-7hqj6.default                     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+istio-egressgateway-84d8fd9b8f-ndq8q.istio-system        Kubernetes     SYNCED     SYNCED     SYNCED     NOT SENT     NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+istio-ingressgateway-75968b946c-ccwzz.istio-system       Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+position-simulator-d76977c-rj2dx.default                 Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+position-tracker-5fc869955f-dq7mc.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+staff-service-549787d74-74x64.default                    Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+staff-service-risky-version-67fc49944c-jsd6g.default     Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+vehicle-telemetry-5b8cb65d5-clxn5.default                Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+webapp-5c79796df5-dth4k.default                          Kubernetes     SYNCED     SYNCED     SYNCED     SYNCED       NOT SENT     istiod-1-18-78f7597c75-pjl2c     1.18.1
+
+
+
+------------------------------uninstall istioctl istiod 1-17 revision-------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl uninstall --revision=1-17
+  Removed IstioOperator:istio-system:installed-state-1-17.
+  Removed Deployment:istio-system:istiod-1-17.
+  Removed Service:istio-system:istiod-1-17.
+  Removed ConfigMap:istio-system:istio-1-17.
+  Removed ConfigMap:istio-system:istio-sidecar-injector-1-17.
+  Removed Pod:istio-system:istiod-1-17-74b85f6f5-ngfxm.
+  Removed ServiceAccount:istio-system:istiod-1-17.
+  Removed RoleBinding:istio-system:istiod-1-17.
+  Removed Role:istio-system:istiod-1-17.
+  Removed EnvoyFilter:istio-system:stats-filter-1.13-1-17.
+  Removed EnvoyFilter:istio-system:stats-filter-1.14-1-17.
+  Removed EnvoyFilter:istio-system:stats-filter-1.15-1-17.
+  Removed EnvoyFilter:istio-system:stats-filter-1.16-1-17.
+  Removed EnvoyFilter:istio-system:stats-filter-1.17-1-17.
+  Removed EnvoyFilter:istio-system:tcp-stats-filter-1.13-1-17.
+  Removed EnvoyFilter:istio-system:tcp-stats-filter-1.14-1-17.
+  Removed EnvoyFilter:istio-system:tcp-stats-filter-1.15-1-17.
+  Removed EnvoyFilter:istio-system:tcp-stats-filter-1.16-1-17.
+  Removed EnvoyFilter:istio-system:tcp-stats-filter-1.17-1-17.
+  Removed PodDisruptionBudget:istio-system:istiod-1-17.
+  Removed MutatingWebhookConfiguration::istio-revision-tag-default.
+  Removed MutatingWebhookConfiguration::istio-sidecar-injector-1-17.
+  Removed ValidatingWebhookConfiguration::istio-validator-1-17-istio-system.
+  Removed ValidatingWebhookConfiguration::istiod-default-validator.
+  Removed ClusterRole::istio-reader-clusterrole-1-17-istio-system.
+  Removed ClusterRole::istiod-clusterrole-1-17-istio-system.
+  Removed ClusterRole::istiod-gateway-controller-1-17-istio-system.
+  Removed ClusterRoleBinding::istio-reader-clusterrole-1-17-istio-system.
+  Removed ClusterRoleBinding::istiod-clusterrole-1-17-istio-system.
+  Removed ClusterRoleBinding::istiod-gateway-controller-1-17-istio-system.
+✔ Uninstall complete                                                               
+
+
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+  
+
