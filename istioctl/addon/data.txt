@@ -1,0 +1,15 @@
+samim@ip-172-31-27-156:~/istio-1.18.1$ k get svc -n istio-system
+NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                                      AGE
+grafana                ClusterIP      10.102.190.92    <none>        3000/TCP                                                                     3m55s
+istio-egressgateway    ClusterIP      10.100.141.107   <none>        80/TCP,443/TCP                                                               22m
+istio-ingressgateway   LoadBalancer   10.111.160.140   <pending>     15021:30696/TCP,80:31827/TCP,443:30331/TCP,31400:32594/TCP,15443:30986/TCP   26m
+istiod                 ClusterIP      10.111.83.144    <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP                                        26m
+jaeger-collector       ClusterIP      10.106.220.235   <none>        14268/TCP,14250/TCP,9411/TCP                                                 2m46s
+kiali                  ClusterIP      10.101.100.75    <none>        20001/TCP,9090/TCP                                                           2m19s
+prometheus             ClusterIP      10.103.190.28    <none>        9090/TCP                                                                     111s
+tracing                ClusterIP      10.110.18.210    <none>        80/TCP                                                                       2m46s
+zipkin                 ClusterIP      10.104.12.229    <none>        9411/TCP                                                                     2m46s
+
+
+
+  
