@@ -1,0 +1,40 @@
+samim@ip-172-31-27-156:~$ minikube start --cpus 4 --memory 6000
+-------------------------------------------------------------------------------------------------------------------------
+
+profile               	default	          demo         	      minimal	        remote	          empty           	preview
+---------------------------------------------------------------------------------------------------------------------------
+Core components	
+
+istio-egressgateway	                        ✔	
+
+istio-ingressgateway	    ✔	                ✔	                                                                      ✔	
+
+istiod	                  ✔	                ✔	                  ✔	                                                  ✔	
+----------------------------istioctl release-------------------------------------------------------------------------------------------------------
+https://github.com/istio/istio/releases
+
+samim@ip-172-31-27-156:~$ wget https://github.com/istio/istio/releases/download/1.18.1/istio-1.18.1-linux-amd64.tar.gz
+samim@ip-172-31-27-156:~$ tar -zxvf istio-1.18.1-linux-amd64.tar.gz
+samim@ip-172-31-27-156:~$ cd istio-1.18.1
+samim@ip-172-31-27-156:~/istio-1.18.1$ export PATH=$PWD/bin:$PATH
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl install --set profile=demo -y
+✔ Istio core installed                                                                                                                                                      
+✔ Istiod installed                                                                                                                                                          
+✔ Egress gateways installed                                                                                                                                                 
+✔ Ingress gateways installed                                                                                                                                                
+✔ Installation complete                            
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl label namespace default istio-injection=enabled
+
+
+-----------------------------------------------Istio Operator------------------------------------------------------------------------------------------
+$ istioctl operator init
+$ kubectl 
+
+---------------------------------- Istio CLI---------------------------------------------------------------------------------------------------------------
+$istioctl install --set profile=demo
+
+$istioctl install --set profile=default       <--------------production
+
+
+
+
