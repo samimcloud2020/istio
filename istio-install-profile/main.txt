@@ -34,6 +34,36 @@ $ kubectl
 $istioctl install --set profile=demo
 
 $istioctl install --set profile=default       <--------------production
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+$istioctl install -f my-operator-config.yaml
+
+
+ my-operator-config.yaml
+
+
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: default
+  components:
+    egressGateways:
+    - name: istio-egressgateway
+      enabled: true
+  meshConfig:
+    enableTracing: true
+    accessLogFile: /dev/stdout
+
+---------------------------------want to generate manifest file from my-operator-config.yaml-------------------------------------
+$istioctl manifest generate -f my-operator-config.yaml  > xxx.yaml
+
+(a large yaml file will generated as manifest) then by kubectl you can apply it
+$kubectl apply -f xxx.yaml
+------------------------------------------------Helm-----------------------------------------------------------------------------------------------
+istio/base: Installs shared components such as CRDs. This is necessary for every Istio installation.
+istio/istiod: Installs the Istio control plane.
+istio/gateway: For installing ingress and egress gateways.
+
+----------------------------------------------------------------------------------------------------------------------------------------
 
 
 
