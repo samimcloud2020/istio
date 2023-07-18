@@ -1,0 +1,175 @@
+GetMesh is the easiest way to get started with Istio and to ensure you’re using trusted, supported versions of Istio. 
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+GetMesh's versions of Istio are actively supported for security patches and other bug updates and have a much longer support life 
+than provided by upstream Istio. 
+
+GetMesh addresses this concern by testing all Istio versions against different Kubernetes distributions for functional integrity.
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio-1.18.1$ curl -sL https://istio.tetratelabs.io/getmesh/install.sh | bash
+tetratelabs/getmesh info checking GitHub for latest tag
+tetratelabs/getmesh info found version: 1.1.5 for v1.1.5/linux/amd64
+tetratelabs/getmesh info installed /home/samim/.getmesh/bin/getmesh
+tetratelabs/getmesh info updating user profile (/home/samim/.bashrc)...
+tetratelabs/getmesh info the following two lines are added into your profile (/home/samim/.bashrc):
+
+export GETMESH_HOME="$HOME/.getmesh"
+export PATH="$GETMESH_HOME/bin:$PATH"
+
+Finished installation. Open a new terminal to start using getmesh!
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ export GETMESH_HOME="$HOME/.getmesh"
+samim@ip-172-31-27-156:~/istio-1.18.1$ export PATH="$GETMESH_HOME/bin:$PATH"
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ getmesh version
+getmesh version: 1.1.5
+active istioctl: 1.18.0-tetrate-v0
+client version: 1.18.0-tetrate-v0
+control plane version: 1.18.1
+data plane version: 1.18.1 (8 proxies)
+
+
+-------------------------Installing Istio with GetMesh----------------------------------------------------------
+$getmesh istioctl install --set profile=demo -y
+
+
+----------------------$ getmesh config-validate--------------------------------------------------
+The config-validate command allows you to validate the current config and any YAML manifests that are not yet applied.
+
+The command invokes validations using external sources such as upstream Istio validations, Kiali libraries, and GetMesh custom configuration checks.
+
+Similarly, you can also pass in a YAML file to validate it, before deploying it to the cluster.
+
+$ getmesh config-validate my-resources.yaml
+-----------------------------------------------------------------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio-1.18.1$ getmesh show
+1.18.0-tetrate-v0 (Active)
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ getmesh list
+ISTIO VERSION     FLAVOR        FLAVOR VERSION     K8S VERSIONS         END OF LIFE 
+   *1.18.0        tetrate             0         1.23,1.24,1.25,1.26     2024-12-07 
+   1.18.0       tetratefips           0         1.23,1.24,1.25,1.26     2024-12-07 
+   1.18.0          istio              0         1.23,1.24,1.25,1.26     2024-12-07 
+   1.17.3         tetrate             0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.3       tetratefips           0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.3          istio              0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.2         tetrate             0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.2       tetratefips           0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.2          istio              0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.1         tetrate             0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.1       tetratefips           0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.1          istio              0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.0         tetrate             0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.17.0          istio              0         1.23,1.24,1.25,1.26     2024-08-14 
+   1.16.5         tetrate             0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.5       tetratefips           0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.5          istio              0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.4         tetrate             0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.4       tetratefips           0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.4          istio              0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.3         tetrate             0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.3       tetratefips           0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.3          istio              0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.2         tetrate             0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.2       tetratefips           0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.2          istio              0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.1         tetrate             0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.1       tetratefips           0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.1          istio              0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.0         tetrate             0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.0       tetratefips           0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.16.0          istio              0         1.22,1.23,1.24,1.25     2024-01-15 
+   1.15.7         tetrate             0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.7       tetratefips           0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.7          istio              0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.4         tetrate             0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.4       tetratefips           0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.4          istio              0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.3         tetrate             0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.3       tetratefips           0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.3          istio              0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.1         tetrate             0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.1       tetratefips           0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.15.1          istio              0         1.22,1.23,1.24,1.25     2023-10-31 
+   1.14.6         tetrate             0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.6       tetratefips           0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.6          istio              0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.5         tetrate             0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.5       tetratefips           0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.5          istio              0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.4         tetrate             0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.4       tetratefips           0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.4          istio              0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.3         tetrate             0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.3       tetratefips           0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.3          istio              0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.1         tetrate             0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.1       tetratefips           0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.14.1          istio              0         1.21,1.22,1.23,1.24     2023-07-24 
+   1.13.7         tetrate             0         1.20,1.21,1.22,1.23     2023-04-11 
+   1.13.7       tetratefips           0         1.20,1.21,1.22,1.23     2023-04-11 
+   1.13.7          istio              0         1.20,1.21,1.22,1.23     2023-04-11 
+   1.13.3         tetrate             0         1.20,1.21,1.22,1.23     2023-04-11 
+   1.13.3       tetratefips           0         1.20,1.21,1.22,1.23     2023-04-11 
+   1.13.3          istio              0         1.20,1.21,1.22,1.23     2023-04-11 
+   1.13.2         tetrate             0         1.20,1.21,1.22,1.23     2023-04-11 
+   1.13.2       tetratefips           0         1.20,1.21,1.22,1.23     2023-04-11 
+   1.13.2          istio              0         1.20,1.21,1.22,1.23     2023-04-11 
+   1.12.8         tetrate             0         1.19,1.20,1.21,1.22     2023-01-18 
+   1.12.8       tetratefips           0         1.19,1.20,1.21,1.22     2023-01-18 
+   1.12.8          istio              0         1.19,1.20,1.21,1.22     2023-01-18 
+   1.12.6         tetrate             0         1.19,1.20,1.21,1.22     2023-01-18 
+   1.12.6       tetratefips           0         1.19,1.20,1.21,1.22     2023-01-18 
+   1.12.6          istio              0         1.19,1.20,1.21,1.22     2023-01-18 
+   1.12.4         tetrate             0         1.19,1.20,1.21,1.22     2023-01-18 
+   1.12.4       tetratefips           0         1.19,1.20,1.21,1.22     2023-01-18 
+   1.12.4          istio              0         1.19,1.20,1.21,1.22     2023-01-18 
+   1.11.8         tetrate             0         1.17,1.18,1.19,1.20     2022-10-12 
+   1.11.8       tetratefips           0         1.17,1.18,1.19,1.20     2022-10-12 
+   1.11.8          istio              0         1.17,1.18,1.19,1.20     2022-10-12 
+   1.11.6         tetrate             1         1.17,1.18,1.19,1.20     2022-10-12 
+   1.11.3         tetrate             0         1.17,1.18,1.19,1.20     2022-10-12 
+   1.11.6       tetratefips           1         1.17,1.18,1.19,1.20     2022-10-12 
+   1.11.3       tetratefips           0         1.17,1.18,1.19,1.20     2022-10-12 
+   1.11.3          istio              0         1.17,1.18,1.19,1.20     2022-10-12 
+   1.10.3         tetrate             0         1.17,1.18,1.19,1.20     2022-03-07 
+   1.10.3       tetratefips           0         1.17,1.18,1.19,1.20     2022-03-07 
+   1.10.3          istio              0         1.17,1.18,1.19,1.20     2022-03-07 
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ getmesh fetch --version 1.16.4 --flavor tetratefips --flavor-version 0
+For more information about 1.16.4-tetratefips-v0, please refer to the release notes: 
+- https://istio.io/latest/news/releases/1.16.x/announcing-1.16.4/
+
+istioctl switched to 1.16.4-tetratefips-v0 now    <-------------------------switched from existing
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ getmesh show
+1.16.4-tetratefips-v0 (Active)   <------------------------------------------------this is active now
+1.18.0-tetrate-v0
+
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ getmesh istioctl version
+client version: 1.16.4-tetratefips-v0
+control plane version: 1.18.1
+data plane version: 1.18.1 (8 proxies)
+
+
+
+--------------------------------To switch to a different version of the Istio CLI--------------------------------------------
+samim@ip-172-31-27-156:~/istio-1.18.1$ getmesh fetch --version 1.17.2 --flavor tetratefips --flavor-version 0
+For more information about 1.17.2-tetratefips-v0, please refer to the release notes: 
+- https://istio.io/latest/news/releases/1.17.x/announcing-1.17.2/
+
+istioctl switched to 1.17.2-tetratefips-v0 now
+samim@ip-172-31-27-156:~/istio-1.18.1$ getmesh switch --name 1.17.2-tetratefips-v0
+istioctl switched to 1.17.2-tetratefips-v0 now
+
+
+
+
