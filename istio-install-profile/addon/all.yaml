@@ -1,9 +1,4 @@
 
-
-
-
----
-
 # Prometheus Starts Here, from the Istio Integrations
 ---
 # Source: prometheus/templates/server/serviceaccount.yaml
