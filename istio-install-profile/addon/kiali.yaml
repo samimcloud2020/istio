@@ -95,7 +95,7 @@ data:
         # Grafana service name is "grafana" and is in the "telemetry" namespace.
         in_cluster_url: 'http://grafana.telemetry:3000/'
         # Public facing URL of Grafana
-        #url: 'http://my-ingress-host/grafana'
+        url: 'http://50.19.8.207:32001'
       custom_dashboards:
         enabled: true
       istio:
