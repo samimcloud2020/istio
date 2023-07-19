@@ -1,0 +1,6 @@
+--------------------------------Using the traffic routing------------------------------------------------------------------------------
+
+we will learn how to deploy new versions of services and run them next to the released, production version of the service, without disrupting production traffic.
+
+With both service versions deployed, we will gradually release (canary release) the new version and start routing a percentage of incoming traffic to the latest version.
+-------------------------------------------------------------------------------------------------------------------------------------------------------
