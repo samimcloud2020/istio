@@ -201,4 +201,37 @@ Forwarding from 0.0.0.0:32002 -> 9411
 $getmesh istioctl dashboard zipkin
 
 -------------------------------------------------------------kiali-----------------------------------------------------------------------
+Kiali is an observability console for Istio with service mesh configuration and validation capabilities. 
+
+It helps you understand the structure and health of your service mesh by monitoring traffic flow to infer the topology and report errors.
+
+Kiali provides detailed metrics and a basic Grafana integration, which can be used for advanced queries. 
+
+Distributed tracing is provided by integration with Jaeger.
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k get all -n istio-system
+NAME                                        READY   STATUS    RESTARTS       AGE
+pod/grafana-7bd5db55c4-rgxnj                1/1     Running   1 (6m3s ago)   3h16m
+pod/istio-egressgateway-c7df4695c-m2998     1/1     Running   2 (6m3s ago)   14h
+pod/istio-ingressgateway-65bc5d57f9-29qkr   1/1     Running   2 (6m3s ago)   14h
+pod/istiod-dd8fd669c-zr2mx                  1/1     Running   2 (6m3s ago)   14h
+pod/kiali-75b4b9df64-2gz85                  0/1     Running   0              5s
+pod/prometheus-67f6764db9-7bmsg             2/2     Running   2 (6m3s ago)   3h26m
+pod/zipkin-77f89cb994-pzr7x                 1/1     Running   1 (6m3s ago)   3h3m
+
+NAME                           TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                                      AGE
+service/grafana                NodePort       10.111.130.18    <none>        3000:32001/TCP                                                               3h16m
+service/istio-egressgateway    ClusterIP      10.102.24.35     <none>        80/TCP,443/TCP                                                               14h
+service/istio-ingressgateway   LoadBalancer   10.111.35.173    <pending>     15021:30013/TCP,80:32479/TCP,443:30554/TCP,31400:30030/TCP,15443:32678/TCP   14h
+service/istiod                 ClusterIP      10.96.224.103    <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP                                        14h
+service/kiali                  NodePort       10.102.116.138   <none>        20001:32003/TCP,9090:31992/TCP                                               5s
+service/prometheus             NodePort       10.111.209.247   <none>        9090:32000/TCP                                                               3h26m
+service/tracing                NodePort       10.107.223.153   <none>        80:32002/TCP                                                                 3h3m
+service/zipkin                 ClusterIP      10.96.115.236    <none>        9411/TCP                                                                     3h3m
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k port-forward service/kiali 32003:20001 --address 0.0.0.0 -n istio-system
+Forwarding from 0.0.0.0:32003 -> 20001
+-----------------------------------------------jaeger------------------------------------------------------------------------------------------------------------
+
 
