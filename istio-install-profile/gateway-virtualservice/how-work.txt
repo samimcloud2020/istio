@@ -1,0 +1,64 @@
+
+
+som.trycloud.co.in:<port exposed of ingress gateway>/productpage----->port:8080 of ingressgateway (gateway)-------->port:9080(clusterip) service(productpage)
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k port-forward service/kiali 32003:20001 --address 0.0.0.0 -n istio-system
+Forwarding from 0.0.0.0:32003 -> 20001
+
+samim@ip-172-31-27-156:~$ kubectl port-forward service/prometheus 32000:9090 --address 0.0.0.0 -n istio-system
+Forwarding from 0.0.0.0:32000 -> 9090
+
+samim@ip-172-31-27-156:~$ kubectl port-forward service/grafana 32001:3000 --address 0.0.0.0 -n istio-system
+Forwarding from 0.0.0.0:32001 -> 3000
+
+samim@ip-172-31-27-156:~$ kubectget all -n istio-system
+NAME                                        READY   STATUS    RESTARTS      AGE
+pod/grafana-7bd5db55c4-2pr95                1/1     Running   1 (71m ago)   9h
+pod/istio-egressgateway-c7df4695c-m2998     1/1     Running   3 (71m ago)   24h
+pod/istio-ingressgateway-65bc5d57f9-29qkr   1/1     Running   3 (8h ago)    24h
+pod/istiod-dd8fd669c-zr2mx                  1/1     Running   3 (8h ago)    24h
+pod/jaeger-78756f7d48-xnqxh                 1/1     Running   1 (71m ago)   9h
+pod/kiali-75b4b9df64-lstzz                  1/1     Running   0             60m
+pod/prometheus-67f6764db9-swxdj             2/2     Running   2 (8h ago)    9h
+
+NAME                           TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                                                                      AGE
+service/grafana                NodePort       10.104.56.52     <none>          3000:32001/TCP                                                               9h
+service/istio-egressgateway    ClusterIP      10.102.24.35     <none>          80/TCP,443/TCP                                                               24h
+service/istio-ingressgateway   LoadBalancer   10.111.35.173    10.111.35.173   15021:30013/TCP,80:32479/TCP,443:30554/TCP,31400:30030/TCP,15443:32678/TCP   24h
+service/istiod                 ClusterIP      10.96.224.103    <none>          15010/TCP,15012/TCP,443/TCP,15014/TCP                                        24h
+service/jaeger-collector       NodePort       10.111.181.246   <none>          14268:32004/TCP,14250:30758/TCP,9411:31433/TCP                               9h
+service/kiali                  NodePort       10.111.91.212    <none>          20001:32003/TCP,9090:31230/TCP                                               60m
+service/prometheus             NodePort       10.101.58.192    <none>          9090:32000/TCP                                                               9h
+service/tracing                NodePort       10.101.29.53     <none>          80:32002/TCP,16685:32588/TCP                                                 9h
+service/zipkin                 ClusterIP      10.108.190.143   <none>          9411/TCP                    
+
+  
+samim@ip-172-31-27-156:~$ kubectl port-forward service/istio-ingressgateway -n istio-system  --address 0.0.0.0 32479:80
+Forwarding from 0.0.0.0:32479 -> 8080  
+
+samim@ip-172-31-27-156:~$ minikube tunnel
+[sudo] password for samim: 
+Status:
+        machine: minikube
+        pid: 150066
+        route: 10.96.0.0/12 -> 192.168.49.2
+        minikube: Running
+        services: [istio-ingressgateway]
+    errors: 
+                minikube: no errors
+                router: no errors
+                loadbalancer emulator: no errors
+$vim /etc/hosts
+  
+10.111.35.173  trycloud.co.in
+
+  
+samim@ip-172-31-27-156:~$ while true;do curl -s http://som.trycloud.co.in:32479/productpage | grep title; echo; done;  
+
+
+
+access from web:--------------
+  http://som.trycloud.co.in:32479/productpage    hit ingressgateway exposed port 32479
+
+
