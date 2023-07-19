@@ -96,6 +96,12 @@ data:
         # Grafana service name is "grafana" and is in the "telemetry" namespace.
         # Public facing URL of Grafana
         url: 'http://50.19.8.207:32001'
+      prometheus:
+        service: prometheus
+        service_namespace: istio-system
+        # Grafana service name is "grafana" and is in the "telemetry" namespace.
+        # Public facing URL of Grafana
+        url: 'http://50.19.8.207:32000'  
       custom_dashboards:
         enabled: true
       istio:
