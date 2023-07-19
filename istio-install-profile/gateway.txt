@@ -57,7 +57,13 @@ For a cloud-managed cluster (GCP, AWS, Azure, etc.), a load balancer resource ge
 Suppose we’re using Minikube or Docker Desktop. In that case, the external IP address will either be set to localhost (Docker Desktop) or, if we’re using Minikube, it will remain pending, and we will have to use the minikube tunnel command to get an IP address.
 
 
+-----------------------------------EGRESS GATEWAY-----------------------------------------------------------------------------------------------------------------------
+In addition to the ingress gateway, we can also deploy an egress gateway to control and filter traffic that’s leaving our mesh.
 
+We can use the same Gateway resource to configure the egress gateway like we configured the ingress gateway. 
+
+Using the egress gateway allows us to centralize all outgoing traffic, logging, and authorization.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
