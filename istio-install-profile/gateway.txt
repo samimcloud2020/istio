@@ -1,0 +1,40 @@
+----------------------------------Exposing services using Gateway resource---------------------------------------------------------------------------
+we installed the Istio ingress and egress gateways. Both gateways run an instance of the Envoy proxy, and they operate as load balancers at the edge of the mesh.
+
+The ingress gateway receives inbound connections, while the egress gateway receives connections going out of the cluster.
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Using the ingress gateway, we can apply route rules to the traffic entering the cluster.
+
+We can have a single external IP address that points to the ingress gateway and route traffic to different services within the cluster based on the host header.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------Ingress and Egress Gateway-----------------------------------------------------------------------------------
+We can configure both gateways using a Gateway resource. 
+
+The Gateway resource describes the exposed ports, protocols, SNI (Server Name Indication) configuration for the load balancer, etc.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: my-gateway
+  namespace: default
+spec:
+  selector:
+    istio: ingressgateway     #selecting ingressgateway
+  servers:
+  - port:
+      number: 80             #The above Gateway resources set up the Envoy proxy as a load balancer exposing port 80 for ingress.
+      name: http
+      protocol: HTTP
+    hosts:                 # The hosts field acts as a filter and will let through only traffic destined for dev.example.com and test.example.com.
+    - dev.example.com
+    - test.example.com
+
+The gateway configuration gets applied to the Istio ingress gateway proxy, which we deployed to the istio-system namespace and has the label istio: ingressgateway set.
+
+The above Gateway resources set up the Envoy proxy as a load balancer exposing port 80 for ingress.
+
+With a Gateway resource, we can only configure the load balancer.
+
+The hosts field acts as a filter and will let through only traffic destined for dev.example.com and test.example.com.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
