@@ -9,11 +9,11 @@ spec:
     istio: ingressgateway # use istio default controller
   servers:
   - port:
-      number: 8080
+      number: 8080 #kubectl port-forward service/istio-ingressgateway -n istio-system  --address 0.0.0.0 32479:80     Forwarding from 0.0.0.0:32479 -> 8080 so here 8080
       name: http
       protocol: HTTP
     hosts:
-    - "som.trycloud.co.in"
+    - "som.trycloud.co.in"    # "*"
     - "sam.trycloud.co.in"
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -22,7 +22,7 @@ metadata:
   name: bookinfo
 spec:
   hosts:
-  - "som.trycloud.co.in"
+  - "som.trycloud.co.in"  #"*"
   - "sam.trycloud.co.in"
   gateways:
   - bookinfo-gateway
