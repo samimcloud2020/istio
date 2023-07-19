@@ -38,3 +38,31 @@ With a Gateway resource, we can only configure the load balancer.
 The hosts field acts as a filter and will let through only traffic destined for dev.example.com and test.example.com.
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+To control and forward the traffic to an actual Kubernetes service running inside the cluster, we have to configure a VirtualService with specific hostnames 
+(dev.example.com and test.example.com for example) and then attach the Gateway to it.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The Ingress gateway we deployed as part of the demo Istio installation created a Kubernetes service with the LoadBalancer type that gets an external IP assigned to it.
+
+$ kubectl get svc -n istio-system
+NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)                                                                      AGE
+istio-egressgateway    ClusterIP      10.0.146.214   <none>           80/TCP,443/TCP,15443/TCP                                                     7m56s
+istio-ingressgateway   LoadBalancer   10.0.98.7      XX.XXX.XXX.XXX   15021:31395/TCP,80:32542/TCP,443:31347/TCP,31400:32663/TCP,15443:31525/TCP   7m56s  <----LB EXT IP ingresgateway
+istiod                 ClusterIP      10.0.66.251    <none>           15010/TCP,15012/TCP,443/TCP,15014/TCP,853/TCP                                8m6s
+
+----------------------------------------how LB EXT IP ASSIGNED?----------------------------------------------------------------------------------------------------
+The way the LoadBalancer Kubernetes service type works depends on how and where we’re running the Kubernetes cluster.
+
+For a cloud-managed cluster (GCP, AWS, Azure, etc.), a load balancer resource gets provisioned in your cloud account, and the Kubernetes LoadBalancer service will get an external IP address assigned to it. 
+
+Suppose we’re using Minikube or Docker Desktop. In that case, the external IP address will either be set to localhost (Docker Desktop) or, if we’re using Minikube, it will remain pending, and we will have to use the minikube tunnel command to get an IP address.
+
+
+
+
+
+
+
+
+
+
+
