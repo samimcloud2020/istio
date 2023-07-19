@@ -415,11 +415,12 @@ spec:
     appProtocol: http
     protocol: TCP
     port: 20001
+    nodePort: 32003
   - name: http-metrics
     appProtocol: http
     protocol: TCP
     port: 9090
-    nodePort: 32003
+    
   selector:
     app.kubernetes.io/name: kiali
     app.kubernetes.io/instance: kiali
