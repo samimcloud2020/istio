@@ -90,6 +90,12 @@ data:
       version_label: v1.67.0
       view_only_mode: false
     external_services:
+      grafana:
+        enabled: true
+        # Grafana service name is "grafana" and is in the "telemetry" namespace.
+        in_cluster_url: 'http://grafana.telemetry:3000/'
+        # Public facing URL of Grafana
+        #url: 'http://my-ingress-host/grafana'
       custom_dashboards:
         enabled: true
       istio:
