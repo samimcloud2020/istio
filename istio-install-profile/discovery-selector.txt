@@ -12,3 +12,144 @@ For example, we have deployed two workloads in separate namespaces — foo and b
 Even though we know that foo will never have to talk to bar and the other way around, the endpoints of one service 
 will be included in the list of discovered endpoints of the other service.  
 
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl proxy-config endpoints deploy/productpage-v1.default
+ENDPOINT                                                STATUS      OUTLIER CHECK     CLUSTER
+10.244.0.13:9080                                        HEALTHY     OK                outbound|9080||details.default.svc.cluster.local
+10.244.0.14:9080                                        HEALTHY     OK                outbound|9080||reviews.default.svc.cluster.local
+10.244.0.15:9080                                        HEALTHY     OK                outbound|9080||reviews.default.svc.cluster.local
+10.244.0.16:8080                                        HEALTHY     OK                outbound|80||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.16:8443                                        HEALTHY     OK                outbound|443||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.16:15021                                       HEALTHY     OK                outbound|15021||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.16:15443                                       HEALTHY     OK                outbound|15443||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.16:31400                                       HEALTHY     OK                outbound|31400||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.17:53                                          HEALTHY     OK                outbound|53||kube-dns.kube-system.svc.cluster.local
+10.244.0.17:9153                                        HEALTHY     OK                outbound|9153||kube-dns.kube-system.svc.cluster.local
+10.244.0.18:9080                                        HEALTHY     OK                outbound|9080||productpage.default.svc.cluster.local
+10.244.0.19:9080                                        HEALTHY     OK                outbound|9080||reviews.default.svc.cluster.local
+10.244.0.20:8080                                        HEALTHY     OK                outbound|80||istio-egressgateway.istio-system.svc.cluster.local
+10.244.0.20:8443                                        HEALTHY     OK                outbound|443||istio-egressgateway.istio-system.svc.cluster.local
+10.244.0.21:15010                                       HEALTHY     OK                outbound|15010||istiod.istio-system.svc.cluster.local
+10.244.0.21:15012                                       HEALTHY     OK                outbound|15012||istiod.istio-system.svc.cluster.local
+10.244.0.21:15014                                       HEALTHY     OK                outbound|15014||istiod.istio-system.svc.cluster.local
+10.244.0.21:15017                                       HEALTHY     OK                outbound|443||istiod.istio-system.svc.cluster.local
+10.244.0.22:9080                                        HEALTHY     OK                outbound|9080||ratings.default.svc.cluster.local
+127.0.0.1:15000                                         HEALTHY     OK                prometheus_stats
+127.0.0.1:15020                                         HEALTHY     OK                agent
+192.168.49.2:8443                                       HEALTHY     OK                outbound|443||kubernetes.default.svc.cluster.local
+unix://./etc/istio/proxy/XDS                            HEALTHY     OK                xds-grpc
+unix://./var/run/secrets/workload-spiffe-uds/socket     HEALTHY     OK                sds-grpc
+
+-------------------------configure discovery selector------------------------------------------------------------------------
+We can configure discovery selectors at the mesh level in MeshConfig. 
+
+
+Discovery selectors are a set of Kubernetes selectors that specify the namespaces Istio watches and updates when pushing configuration to the sidecars.
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k describe deploy productpage-v1 -n default
+Name:                   productpage-v1
+Namespace:              default
+CreationTimestamp:      Tue, 18 Jul 2023 16:57:13 +0000
+Labels:                 app=productpage
+                        version=v1
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=productpage,version=v1
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:           app=productpage
+                    version=v1
+---------d.yaml-----------label your namespace env: test then istioctl will discover these ns having label env: test and send updates-------------------
+
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  namespace: istio-system
+  name: istio-demo
+spec:
+  meshConfig:
+    discoverySelectors:
+    - matchLabels:
+        env: test
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k apply -f d.yaml
+istiooperator.install.istio.io/istio-demo created
+
+sets the env: test as a match label. That means the list of namespaces Istio watches and updates will include workloads in namespaces 
+labeled with app=productpage.
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k create ns foo
+namespace/foo created
+samim@ip-172-31-27-156:~/istio-1.18.1$ k label ns foo env=test
+namespace/foo labeled
+
+#kubectl create sa sa1 -n foo
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl label namespace foo istio-injection=enabled
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k create deploy deploy1 --image=nginx --replicas=3 -n foo --dry-run=client -o yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: deploy1
+  name: deploy1
+  namespace: foo    #ns
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: deploy1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: deploy1
+    spec:
+      serviceAccountName: sa1   #sa
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl proxy-config endpoints deploy/deploy1.foo
+ENDPOINT                                                STATUS      OUTLIER CHECK     CLUSTER
+10.244.0.13:9080                                        HEALTHY     OK                outbound|9080||details.default.svc.cluster.local
+10.244.0.14:9080                                        HEALTHY     OK                outbound|9080||reviews.default.svc.cluster.local
+10.244.0.15:9080                                        HEALTHY     OK                outbound|9080||reviews.default.svc.cluster.local
+10.244.0.16:8080                                        HEALTHY     OK                outbound|80||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.16:8443                                        HEALTHY     OK                outbound|443||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.16:15021                                       HEALTHY     OK                outbound|15021||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.16:15443                                       HEALTHY     OK                outbound|15443||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.16:31400                                       HEALTHY     OK                outbound|31400||istio-ingressgateway.istio-system.svc.cluster.local
+10.244.0.17:53                                          HEALTHY     OK                outbound|53||kube-dns.kube-system.svc.cluster.local
+10.244.0.17:9153                                        HEALTHY     OK                outbound|9153||kube-dns.kube-system.svc.cluster.local
+10.244.0.18:9080                                        HEALTHY     OK                outbound|9080||productpage.default.svc.cluster.local
+10.244.0.19:9080                                        HEALTHY     OK                outbound|9080||reviews.default.svc.cluster.local
+10.244.0.20:8080                                        HEALTHY     OK                outbound|80||istio-egressgateway.istio-system.svc.cluster.local
+10.244.0.20:8443                                        HEALTHY     OK                outbound|443||istio-egressgateway.istio-system.svc.cluster.local
+10.244.0.21:15010                                       HEALTHY     OK                outbound|15010||istiod.istio-system.svc.cluster.local
+10.244.0.21:15012                                       HEALTHY     OK                outbound|15012||istiod.istio-system.svc.cluster.local
+10.244.0.21:15014                                       HEALTHY     OK                outbound|15014||istiod.istio-system.svc.cluster.local
+10.244.0.21:15017                                       HEALTHY     OK                outbound|443||istiod.istio-system.svc.cluster.local
+10.244.0.22:9080                                        HEALTHY     OK                outbound|9080||ratings.default.svc.cluster.local
+127.0.0.1:15000                                         HEALTHY     OK                prometheus_stats
+127.0.0.1:15020                                         HEALTHY     OK                agent
+192.168.49.2:8443                                       HEALTHY     OK                outbound|443||kubernetes.default.svc.cluster.local
+unix://./etc/istio/proxy/XDS                            HEALTHY     OK                xds-grpc
+unix://./var/run/secrets/workload-spiffe-uds/socket     HEALTHY     OK                sds-grpc
+
+NOTE: Delete a label 
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl label namespace default env-
+namespace/default unlabeled
+
+If we label the foo namespace with env=test label and then list the endpoints, we’ll notice there are not as many endpoints listed in the configuration now. That’s because the only namespace we labeled is the foo namespace, and that’s the only namespace the Istio control plane watches and sends updates for.
+
+--------------DISCOVERY SELECTOR IS MESH LABEL BUT YOU ONLY DO ON NAMESPACE LABEL BUT MESH LABEL MAY CAUSE SLOW DOWN AS UPDATES GOING ON -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
