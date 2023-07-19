@@ -1,0 +1,14 @@
+-----------------------------interduced istio 1.10--------------------------------------------------
+
+which namespace to watch and send configuration updates for.
+---------------------------------------------------------------------------------------------------------------------------------
+By default, the Istio control plane watches and processes updates for all Kubernetes resources in a cluster. 
+
+All Envoy proxies in the mesh are configured so that they can reach every workload in the mesh and 
+accept traffic on all ports associated with the workloads.  
+
+--------------------------------------------------------------------------------------------------------------------------------
+For example, we have deployed two workloads in separate namespaces — foo and bar.
+Even though we know that foo will never have to talk to bar and the other way around, the endpoints of one service 
+will be included in the list of discovered endpoints of the other service.  
+
