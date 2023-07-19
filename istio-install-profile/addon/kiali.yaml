@@ -91,7 +91,8 @@ data:
       view_only_mode: false
     external_services:
       grafana:
-        enabled: true
+        service: grafana
+        service_namespace: istio-system
         # Grafana service name is "grafana" and is in the "telemetry" namespace.
         # Public facing URL of Grafana
         url: 'http://50.19.8.207:32001'
