@@ -409,6 +409,7 @@ metadata:
     app.kubernetes.io/part-of: "kiali"
   annotations:
 spec:
+  type: NodePort
   ports:
   - name: http
     appProtocol: http
