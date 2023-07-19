@@ -233,5 +233,5 @@ service/zipkin                 ClusterIP      10.96.115.236    <none>        941
 samim@ip-172-31-27-156:~/istio-1.18.1$ k port-forward service/kiali 32003:20001 --address 0.0.0.0 -n istio-system
 Forwarding from 0.0.0.0:32003 -> 20001
 -----------------------------------------------jaeger------------------------------------------------------------------------------------------------------------
-
+Jaeger is an open source end to end distributed tracing system, allowing users to monitor and troubleshoot transactions in complex distributed systems.
 
