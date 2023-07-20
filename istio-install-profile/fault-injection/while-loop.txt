@@ -1,0 +1,3 @@
+while true;do curl -s http://som.trycloud.co.in:32479/productpage | grep title; echo; done;
+
+while true;do curl -s http://sam.trycloud.co.in:32479/productpage | grep title; echo; done;
