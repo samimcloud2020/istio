@@ -189,6 +189,11 @@ spec:
       name: v2
 
 
+samim@ip-172-31-27-156:~$ while true; do curl -I -s  http://som.trycloud.co.in:32479/productpage | grep Service; echo; done; 
+HTTP/1.1 503 Service Unavailable
+
+
+
 The above retry policy will attempt to retry any request that fails with a connect timeout (connect-failure) or if the server does not respond at all (reset). 
 
 We set the per-try attempt timeout to 2 seconds and the number of attempts to 10. Note that if we set both retries and timeouts, 
