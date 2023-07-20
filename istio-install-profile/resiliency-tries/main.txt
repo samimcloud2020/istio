@@ -1,0 +1,22 @@
+------------------------------------------------------------Resiliency------------------------------------------------------------------------------------------------
+Resiliency is the ability to provide and maintain an acceptable level of service in the face of faults and challenges to regular operation.
+
+It’s not about avoiding failures. 
+
+It’s responding to them in such a way that there’s no downtime or data loss. 
+
+The goal for resiliency is to return the service to a fully functioning state after a failure occurs.
+
+A crucial element in making services available is using timeouts and retry policies when making service requests.
+
+We can configure both on Istio’s VirtualService.
+
+Using the timeout field, we can define a timeout for HTTP requests.
+
+If the request takes longer than the value specified in the timeout field, 
+Envoy proxy will drop the requests and mark them as timed out (return an HTTP 408 to the application).
+
+The connections remain open unless outlier detection is triggered. 
+
+Here’s an example of setting a timeout for a route:
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
