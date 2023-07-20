@@ -19,7 +19,7 @@ Envoy proxy will drop the requests and mark them as timed out (return an HTTP 40
 The connections remain open unless outlier detection is triggered. 
 
 Here’s an example of setting a timeout for a route:
----------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------timeout---------------------------------------------------------------------------------------------------
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
