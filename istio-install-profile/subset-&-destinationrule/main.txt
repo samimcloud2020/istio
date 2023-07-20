@@ -138,4 +138,58 @@ spec:
   - name: v2
     labels:
       version: v2
------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------Client TLS Settings---------------------------------------------------------------------------
+Contains any TLS related settings for connections to the upstream service. 
+
+Here’s an example of configuring mutual TLS using the provided certificates:
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: customers-destination
+spec:
+  host: customers.default.svc.cluster.local
+  trafficPolicy:
+  tls:
+    mode: MUTUAL
+    clientCertificate: /etc/certs/cert.pem
+    privateKey: /etc/certs/key.pem
+    caCertificates: /etc/certs/ca.pem
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+
+
+Other supported TLS modes are DISABLE (no TLS connection), SIMPLE (originate a TLS connection the upstream endpoint),
+and ISTIO_MUTUAL (similar to MUTUAL, which uses Istio’s certificates for mTLS).
+-----------------------------------------------------------------------------Port Traffic Policy--------------------------------------------------------------------
+Using the portLevelSettings field we can apply traffic policies to individual ports.
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: customers-destination
+spec:
+  host: customers.default.svc.cluster.local
+  trafficPolicy:
+  portLevelSettings:
+  - port:
+      number: 80
+    loadBalancer:
+      simple: LEAST_CONN
+  - port:
+      number: 8000
+    loadBalancer:
+      simple: ROUND_ROBIN
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
