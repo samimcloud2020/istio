@@ -20,3 +20,180 @@ The connections remain open unless outlier detection is triggered.
 
 Here’s an example of setting a timeout for a route:
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: http-ingress-gateway
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 8080
+      name: http
+      protocol: HTTP
+    hosts:
+      - "som.trycloud.co.in"   # domain name of external website
+      - "sam.trycloud.co.in"
+---    
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-vs1
+  namespace: default
+spec:
+  hosts:
+    - "som.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+      - destination:
+        host: productpage.default.svc.cluster.local
+        subset: v1
+      timeout: 10s    #10s timeout
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-vs2
+  namespace: default
+spec:
+  hosts:
+    - "sam.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+      - destination:
+        host: productpage.default.svc.cluster.local
+        subset: v2
+      timeout: 10s   #10s timeout
+       
+---
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-ds1
+  namespace: default
+spec:
+  host: productpage
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+  subsets:
+    - labels:
+        version: v1
+      name: v1
+    - labels:
+        version: v2
+      name: v2
+------------------------------------------------------------------------------retry policy-------------------------------------------------------------
+In addition to timeouts, we can also configure a more granular retry policy. We can control the number of retries for a given request and the timeout per try
+as well as the specific conditions we want to retry on.
+
+Both retries and timeouts happen on the client-side. 
+
+EX:
+we can only retry the requests if the upstream server returns any 5xx response code, or retry only on gateway errors (HTTP 502, 503, or 504), 
+or even specify the retriable status codes in the request headers. When Envoy retries a failed request, 
+the endpoint that initially failed and caused the retry is no longer included in the load balancing pool. 
+
+Let’s say the Kubernetes service has three endpoints (Pods), and one of them fails with a retriable error code. 
+When Envoy retries the request, it won’t resend the request to the original endpoint anymore. 
+Instead, it will send the request to one of the two endpoints that haven’t failed.
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: http-ingress-gateway
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 8080
+      name: http
+      protocol: HTTP
+    hosts:
+      - "som.trycloud.co.in"   # domain name of external website
+      - "sam.trycloud.co.in"
+---    
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-vs1
+  namespace: default
+spec:
+  hosts:
+    - "som.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+      - destination:
+        host: productpage.default.svc.cluster.local
+        subset: v1
+      retries:
+        attempts: 10
+        perTryTimeout: 2s
+        retryOn: connect-failure,reset
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-vs2
+  namespace: default
+spec:
+  hosts:
+    - "sam.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+      - destination:
+        host: productpage.default.svc.cluster.local
+        subset: v2
+      retries:
+        attempts: 10
+        perTryTimeout: 2s
+        retryOn: connect-failure,reset
+       
+---
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-ds1
+  namespace: default
+spec:
+  host: productpage
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+  subsets:
+    - labels:
+        version: v1
+      name: v1
+    - labels:
+        version: v2
+      name: v2
+
+
+The above retry policy will attempt to retry any request that fails with a connect timeout (connect-failure) or if the server does not respond at all (reset). 
+
+We set the per-try attempt timeout to 2 seconds and the number of attempts to 10. Note that if we set both retries and timeouts, 
+the timeout value will be the maximum the request will wait.
+
+If we had a 10-second timeout specified in the above example, we would only ever wait 10 seconds maximum, 
+even if there are still attempts left in the retry policy.
+---------------------------------------------------------------------------------------------------------------------------------------------------------
