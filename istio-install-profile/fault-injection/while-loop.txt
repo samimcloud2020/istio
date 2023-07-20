@@ -1,3 +1,12 @@
-while true;do curl -s http://som.trycloud.co.in:32479/productpage | grep title; echo; done;
+samim@ip-172-31-27-156:~$ while true;do curl -s http://som.trycloud.co.in:32479/productpage | grep title; echo; done; 
 
-while true;do curl -s http://sam.trycloud.co.in:32479/productpage | grep title; echo; done;
+routed to productpage-v1 weighted 50% and goes 45% to details
+
+samim@ip-172-31-27-156:~$ while true;do curl -s http://sam.trycloud.co.in:32479/productpage | grep title; echo; done; 
+
+routed to productpage-v2 weighted 50% and goes 45% to details
+
+
+as details fault-injection 10%.
+
+so 45% + 45% =90% goes to details and 10% traffic dropped with httpstatus 505.
