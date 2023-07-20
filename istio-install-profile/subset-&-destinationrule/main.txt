@@ -1,0 +1,57 @@
+The destinations also refer to different subsets (or service versions). 
+
+With subsets, we can identify different variants of our application. 
+
+In our example, we have two subsets, v1 and v2, which correspond to the two different versions of our customer service.
+
+Each subset uses a combination of key/value pairs (labels) to determine which Pods to include. 
+
+We can declare subsets in a resource type called DestinationRule.
+-----------------------------------------------------------------------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: customers-destination
+spec:
+  host: customers.default.svc.cluster.local
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+--------------------------------------------Traffic Policies in DestinationRule-------------------------------------------------------------------------------------
+With the DestinationRule, we can define load balancing configuration, connection pool size, outlier detection, etc.,
+to apply to the traffic after the routing has occurred. 
+
+We can set the traffic policy settings under the trafficPolicy field.
+
+Load balancer settings
+Connection pool settings
+Outlier detection
+Client TLS settings
+Port traffic policy
+---------------------------------------------Load Balancer Settings-----------------------------------------------------------------------------------------------
+With the load balancer settings, we can control which load balancer algorithm is used for the destination.
+
+Here’s an example of the DestinationRule with the traffic policy that sets the load balancing algorithm for the destination to round-robin:
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: customers-destination
+spec:
+  host: customers.default.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN   #algorithm for load balancing is round robin
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
