@@ -171,4 +171,217 @@ Note that the fault injection will not trigger any retry policies we have set on
 
 EX:
 if we injected an HTTP 500 error, the retry policy configured to retry on the HTTP 500 will not be triggered.
-----------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------what is fault-injection? two types: ABORT & DELAY----------------------------------------------------------------
+What is Fault Injection?
+
+In Istio, fault injection is a way to introduce problems in your architecture deliberately to understand how your system and organizational process will respond when it happens in real life.
+
+It is a way to architect resiliency and fault tolerance in your system using very little effort.
+
+As of this blog, there are only 2 types of faults that you can inject in your system with Istio:
+
+Delay: Introducing Time Delays between different micro services call to simulate failures such as network issues, overloaded upstream service, etc.
+
+Abort: Aborting requests and returning 500 or 503 errors to the downstream service simulating faults in the upstream service. With this, you can understand how well your system handles error.
+
+To simulate more advanced types of faults, you can use Chaos Monkey by Gremlin which is a specialised Chaos Engineering tool.
+-----------------------------------------chaos engineering----------------------------------------------------------------------------------------------
+Chaos engineering is a method of testing distributed software that deliberately introduces failure and faulty scenarios to verify its resilience in the face of random disruptions.
+
+Chaos Engineering lets you compare what you think will happen to what actually happens in your systems. You literally “break things on purpose” to learn how to build more resilient systems.
+
+
+--------------------------------------------Gremlin Chaos Engineering Experiments on Google Cloud-----------------------------------------------------------------
+Now let's start Gremlin Chaos Engineering Experiments on Google Cloud as follows :
+
+Gremlin Shutdown Attack on GKE Pods to validate the High Availability of the application
+Gremlin CPU Attack on GKE Pods to validate GKE Horizontal Pod Autoscaling.
+Gremlin Blackhole Attack on GKE Load Balancer to validate High Availability of web application on GKE.
+
+To signup for a Gremlin Web App account → https://app.gremlin.com/signup
+
+In order to perform various chaos experiments on GKE, we need to install the Gremlin Kubernetes Client in GKE so that we can create various attacks on GKE from the Gremlin web application.
+-----------------------------------------------------------------------------------------------------------------------------------------------
+An attack is a method of injecting failure into a system in a simple, safe, and secure way. Gremlin provides a range of attacks that you can run against your infrastructure. This includes impacting system resources, delaying or dropping network traffic, shutting down hosts, and more. In addition to running one-time attacks, you can also schedule regular or recurring attacks, create attack templates, and view attack reports.
+
+Gremlin provides three categories of attacks:
+
+Resource attacks: test against sudden changes in consumption of computing resources
+Network attacks: test against unreliable network conditions
+State attacks: test against unexpected changes in your environment such as power outages, node failures, clock drift, or application crashes
+
+-----------------------------Installing the Gremlin Client Agent on GKE Cluster------------------------------------------------------
+To install the Gremlin Kubernetes client, you will need your Gremlin Team ID and Secret Key. If you don’t know what your Team ID and Secret Key are, you can get them from the Gremlin web app.
+
+Add the Gremlin Helm chart:
+
+helm repo add gremlin https://helm.gremlin.com
+Create a namespace for the Gremlin Kubernetes client:
+
+kubectl create namespace gremlin
+
+Next, you will run the helm command to install the Gremlin client. In this command, there are three placeholder variables that you will need to replace with real data. Replace $GREMLIN_TEAM_ID with your Team ID, and replace $GREMLIN_TEAM_SECRET with your Secret Key. Replace $GREMLIN_CLUSTER_ID with the name of GKE Cluster.
+
+helm install gremlin gremlin/gremlin 
+--namespace gremlin \
+--set gremlin.hostPID=true \
+--set gremlin.secret.managed=true \
+--set gremlin.container.driver=docker-runc \
+--set gremlin.secret.type=secret \
+--set gremlin.secret.teamID=$GREMLIN_TEAM_ID \ 
+--set gremlin.secret.clusterID=$GREMLIN_CLUSTER_ID \
+--set gremlin.secret.teamSecret=$GREMLIN_TEAM_SECRET
+
+kubectl get pods -n gremlin
+Deploying Nginx Application on GKE Cluster with HPA
+Create a separate namespace for Nginx deployment.
+kubectl create ns app
+2. Deploying Nginx deployment in app namespace.
+
+kubectl apply -f nginx.yaml
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+        resources:
+          # You must specify requests for CPU to autoscale
+          # based on CPU utilization
+          requests:
+            cpu: "200m"
+
+
+3. Exposing Nginx Deployment with GKE Load Balancer.
+
+kubectl expose deployment myapp --type=LoadBalancer --port=80
+4. Deploying Horizontal Pod Autoscalar for Nginx Deployment.
+
+kubectl apply -f hpa.yaml
+
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: myapp
+  namespace: app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+
+
+5. Check all resources deployed correctly or not using the below command.
+
+kubectl get all -n app
+
+----------------------------------------------------Gremlin Attacks-----------------------------------------------------------------------------
+An attack is a method of injecting failure into a system in a simple, safe, and secure way. Gremlin provides a range of attacks that you can run against your infrastructure. This includes impacting system resources, delaying or dropping network traffic, shutting down hosts, and more. In addition to running one-time attacks, you can also schedule regular or recurring attacks, create attack templates, and view attack reports.
+
+Gremlin provides three categories of attacks:
+
+Resource attacks: test against sudden changes in consumption of computing resources
+Network attacks: test against unreliable network conditions
+State attacks: test against unexpected changes in your environment such as power outages, node failures, clock drift, or application crashes
+
+-------------------------------------Validating High Availability with Gremlin Shutdown Attack-----------------------------------------------------
+Shutdown attacks let teams build resilience to host failures by testing how their applications and systems behave when an instance is no longer running.
+
+Configuring Gremlin Attacks for Nginx Deployment
+Go to Attacks Menu in Gremlin Web App Console → Select Kubernetes → Choose a Cluster and Namespace ( where the target app is present )
+
+Select the target Deployment on which Gremlin performs the attack and define the blast radius for the attack.
+
+Blast Radius: Number of hosts included or amount of target part in the attack
+
+------------------------------------------shutdown attack------------------------------------------------------------------------------------------
+For Shutdown, Attacks choose the type of attack as Shutdown attack from State Attacks.
+
+Click on attack details to see the attack details and output of the attack which Gremlin is running on Nginx Deployment Pods.
+
+We can see that the Nginx Deployment is highly available even while running the shutdown attack due to more replicas.
+
+kubectl get pods -n app -w
+
+A shutdown Attack can answers questions such as:
+
+How long does it take for an instance to restart? Does my application successfully restart when the instance comes back online?
+Does my load balancer automatically reroute requests away from the failed instance? Do I have other instances available to handle these requests?
+If a user has an active session on an instance that fails, does the session gracefully continue on a different instance?
+Is there any data loss? Are ongoing processing jobs restarted?
+
+
+-------------------------------------Validating GKE Horizontal Pod Autoscaling with Gremlin---------cpu attack-----------------------------------------
+CPU attacks help you ensure that your application behaves as expected even when CPU capacity is limited or exhausted. CPU attacks can also help test and validate automatic remediation processes, such as auto-scaling and load balancing.
+
+For CPU Attack choose the type of attack as the CPU attack from Resource Attacks and configure more details for the attack like attack duration time, target CPU capacity going to be impacted, etc.
+
+Running Gremlin CPU Attack
+
+Click on attack details to see the attack details and output of the attack which Gremlin is running on Nginx Deployment Pods.
+
+we can validate whether the Horizontal Pod Autoscaling defined for CPU Utilization by Nginx Pods working or not during the attack.
+
+kubectl get pods -n app -w
+
+We can see that GKE HPA scaling up the Nginx Pods to count 4 as Max Count we defined is 4.
+
+kubectl get hpa
+
+In this way, by running CPU or Memory attacks we can validate the HPA defined for the application.
+
+CPU attacks can answer questions such as:
+
+How is the user experience impacted when CPU resources are exhausted?
+Do I have monitoring and alerting in place to detect CPU spikes?
+Do I have quotas configured to limit CPU by application or process or container?
+Do I have cleanup scripts to get rid of corrupted threads?
+-----------------------------Validating Nginx Web App High Availability with Gremlin Blackhole Attack on GKE Load Balancer------------------
+Blackhole attacks let you simulate these outages by dropping network traffic between services. This lets you uncover hard dependencies, test fallback, and failover mechanisms, and prepare your applications for unreliable networks.
+
+For Blackhole Attack choose the type of attack as the Blackhole attack from Network Attacks and configure more details for the attack like Port details etc.
+
+In our case, we have Nginx Deployment running on port 80.
+
+Running Gremlin Blackhole Attack
+
+Click on attack details to see the attack details and output of the attack which Gremlin is running on Nginx Deployment Pods.
+
+We can check the Nginx web page status from the GCP Load Balancer External IP. There is no latency or blockage in terms of web experience due to high availability and GCP Load Balancing between multiple backend pods.
+
+Blackhole attacks can answer questions such as:
+
+Where do dependencies exist within our system?
+Do we have monitoring in place to alert on the unavailability of each service?
+Does our application gracefully degrade if a dependency is unavailable?
+Is the user experience negatively affected when a downstream dependency is unavailable?
+Do we have dependencies that we think are non-critical, but can actually bring down our entire application?
+
+------------------------------for notification use slack----------------------------------------------------------------------------
+For the notification part, we have configured the slack Integration with the Gremlin web app, by which we get all the notifications in the slack channel regarding the status of each Gremlin attack we perform on GKE.
+
