@@ -93,6 +93,10 @@ spec:
     - labels:
         version: v2
       name: v2
+
+
+samim@ip-172-31-27-156:~$ while true; do curl -s  http://som.trycloud.co.in:32479/productpage | grep title; echo; done; 
+
 ------------------------------------------------------------------------------retry policy-------------------------------------------------------------
 In addition to timeouts, we can also configure a more granular retry policy. We can control the number of retries for a given request and the timeout per try
 as well as the specific conditions we want to retry on.
@@ -189,6 +193,10 @@ spec:
       name: v2
 
 
+grafana------> data source from-----> set http://<prometheus ip>:<port>
+
+then see istio dashboard in grafana.
+
 samim@ip-172-31-27-156:~$ while true; do curl -I -s  http://som.trycloud.co.in:32479/productpage | grep Service; echo; done; 
 HTTP/1.1 503 Service Unavailable
 
@@ -201,4 +209,24 @@ the timeout value will be the maximum the request will wait.
 
 If we had a 10-second timeout specified in the above example, we would only ever wait 10 seconds maximum, 
 even if there are still attempts left in the retry policy.
----------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------timeout design--------------------------------------------------------------------------------------
+The Timeout Design Pattern states that you should not wait for a service response for an indefinite amount of time — you should rather throw an exception instead of waiting for too long. This will ensure that you are not stuck in a limbo state while continuing to consume application resources.
+
+Service calls made over the network might fail. There can be congestion in the network or a power failure impacting your systems. The request might reach the destination service but it might fail to send the response back to the primary service. The data might get corrupted or lost during transmission over the wire. While architecting distributed cloud applications, you should assume that these types of network failures will happen and design your applications for resiliency. Implementing a timeout strategy ensures that your microservices are resilient and available.
+
+By default, the timeout for HTTP requests is disabled, but it can be overridden by using a routing rule.
+
+---------------------------------------------------timeout default design----------------------------------------------------------------
+
+Timeout per try always 3s (including initial call), but the total timeout for all attempts is 8s.
+
+It basically means that:------------>
+
+An attempt is marked as failed if it takes longer than 3 seconds.
+
+There are going to be a maximum of 3 attempts.
+
+The overall waiting time for a successful attempt will not be longer than 8 seconds.
+
+perTryTimeout * retries should not exceed the global timeout. If it does, the retry attempts that fall outside the global timeout will be ignored.
+---------------------------------------------------------------------------------------------------------------------------------------------
