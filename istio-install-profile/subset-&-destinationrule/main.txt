@@ -103,4 +103,39 @@ spec:
   - name: v2
     labels:
       version: v2
----------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------Outlier Detection-----------------------------------------------------------------------------------------------
+Outlier detection is a circuit breaker implementation that tracks the status of each host (Pod) in the upstream service. 
+
+If a host starts returning 5xx HTTP errors, it gets ejected from the load balancing pool for a predefined time.
+
+For the TCP services, Envoy counts connection timeouts or failures as errors.
+
+EX:
+that sets a limit of 500 concurrent HTTP2 requests (http2MaxRequests), with not more than ten requests per connection (maxRequestsPerConnection) to the service.
+
+The upstream hosts (Pods) get scanned every 5 minutes (interval), and if any of them fails ten consecutive times (consecutiveErrors), Envoy will eject it for 10 minutes (baseEjectionTime).
+
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: customers-destination
+spec:
+  host: customers.default.svc.cluster.local
+  trafficPolicy:
+  connectionPool:
+    http:
+      http2MaxRequests: 500
+      maxRequestsPerConnection: 10
+  outlierDetection:
+    consecutiveErrors: 10
+    interval: 5m
+    baseEjectionTime: 10m
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+-----------------------------------------------------------------------------------------------------------------------------------------------
