@@ -53,8 +53,8 @@ spec:
   http:
     - route:
       - destination:
-        host: productpage.default.svc.cluster.local
-        subset: v1
+          host: productpage.default.svc.cluster.local
+          subset: v1
       timeout: 10s    #10s timeout
 ---
 kind: VirtualService
@@ -71,8 +71,8 @@ spec:
   http:
     - route:
       - destination:
-        host: productpage.default.svc.cluster.local
-        subset: v2
+          host: productpage.default.svc.cluster.local
+          subset: v2
       timeout: 10s   #10s timeout
        
 ---
@@ -141,8 +141,8 @@ spec:
   http:
     - route:
       - destination:
-        host: productpage.default.svc.cluster.local
-        subset: v1
+          host: productpage.default.svc.cluster.local
+          subset: v1
       retries:
         attempts: 10
         perTryTimeout: 2s
