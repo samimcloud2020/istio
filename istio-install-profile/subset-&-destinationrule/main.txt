@@ -79,5 +79,28 @@ spec:
   - name: v2
     labels:
       version: v2
---------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------Connection Pool Settings---------------------------------------------------------------------------------------------------
+These settings can be applied to each host in the upstream service at the TCP and HTTP level,
+and we can use them to control the volume of connections.
 
+Here’s a snippet that shows how we can set a limit of concurrent requests to the service:
+
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: customers-destination
+spec:
+  host: myredissrv.prod.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      http:
+        http2MaxRequests: 50  # max requests to host is 50 (limit of concurrent request for the service)
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
