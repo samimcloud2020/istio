@@ -10,7 +10,7 @@ spec:
       abort:
         httpStatus: 555
         percentage:
-          value: 100
+          value: 10     #you can make 100 if want to stop all traffic to svc/details
     route:
     - destination:
         host: details
