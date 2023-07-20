@@ -85,7 +85,7 @@ spec:
     fault:
       abort:
         percentage:
-          value: 30
+          value: 30       #fault-injection RETUN CLIENT httpStatus: 404 OF 30% ABORT
         httpStatus: 404
   
 ---
@@ -108,7 +108,7 @@ spec:
     fault:
       abort:
         percentage:
-          value: 50
+          value: 50     #fault-injection RETUN CLIENT httpStatus: 404 OF 50% ABORT
         httpStatus: 404
        
 ---
