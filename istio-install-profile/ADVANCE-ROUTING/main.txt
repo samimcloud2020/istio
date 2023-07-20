@@ -1,0 +1,32 @@
+--------------------------------------------advance-routing--------------------------------------------------------------------------------------
+Earlier, we learned how to route traffic between multiple subsets using the proportion of the traffic (weight field). 
+
+In some cases, pure weight-based traffic routing or splitting is enough. 
+
+However, there are scenarios and cases where we might need more granular control over how the traffic is split and forwarded to destination services.
+
+Istio allows us to use parts of the incoming requests and match them to the defined values.
+
+EX:
+we can check the URI prefix of the incoming request and route the traffic based on that.
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Property	                                                Description
+---------                 --------------------------------------------------------------------------------------------
+uri                      Match the request URI to the specified value
+
+schema                   Match the request schema (HTTP, HTTPS, …)
+
+method                   Match the request method (GET, POST, …)
+
+authority	               Match the request authority header
+
+headers                  Match the request headers. Headers have to be lower-case and separated by hyphens (e.g. x-my-request-id). 
+                         Note, if we use headers for matching, other properties get ignored (uri, schema, method, authority)
+----------------------------------------------------------------------------------------------------------------------------------------
+Each of the above properties can get matched using one of these methods:
+
+Exact match: e.g. exact: "value" matches the exact string
+Prefix match: e.g. prefix: "value" matches the prefix only
+Regex match: e.g. regex: "value" matches based on the ECMAscript style regex
+
+------------------------------------------------------------------------------------------------------------------------------------------
