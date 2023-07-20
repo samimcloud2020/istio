@@ -162,8 +162,8 @@ spec:
   http:
     - route:
       - destination:
-        host: productpage.default.svc.cluster.local
-        subset: v2
+          host: productpage.default.svc.cluster.local
+          subset: v2
       retries:
         attempts: 10
         perTryTimeout: 2s
