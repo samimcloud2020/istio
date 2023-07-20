@@ -30,3 +30,231 @@ Prefix match: e.g. prefix: "value" matches the prefix only
 Regex match: e.g. regex: "value" matches based on the ECMAscript style regex
 
 ------------------------------------------------------------------------------------------------------------------------------------------
+---      
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: bookinfo-gateway
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 8080 #kubectl port-forward service/istio-ingressgateway -n istio-system  --address 0.0.0.0 32479:80     Forwarding from 0.0.0.0:32479 -> 8080 so here 8080
+      name: http
+      protocol: HTTP
+    hosts:
+    - "som.trycloud.co.in"    # "*"
+    - "sam.trycloud.co.in"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: bookinfo
+spec:
+  hosts:
+  - "som.trycloud.co.in"  #"*"
+  - "sam.trycloud.co.in"
+  gateways:
+  - bookinfo-gateway
+  http:
+  - match:
+    - uri:
+        exact: /productpage  #The above snippet would match the incoming request, and the request would get routed to the destination defined in that route.  OR Operator
+    - uri:
+        prefix: /static
+    - uri:
+        exact: /login
+    - uri:
+        exact: /logout
+    - uri:
+        prefix: /api/v1/products
+    route:
+    - destination:
+        host: productpage
+        port:
+          number: 9080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: productpage
+spec:
+  host: productpage
+  subsets:
+  - name: v1
+    labels:
+      version: v1      
+------------------------------------The above match will match any requests where the User Agent header matches the Regex.---------------------------------------------
+
+---      
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: bookinfo-gateway
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 8080 #kubectl port-forward service/istio-ingressgateway -n istio-system  --address 0.0.0.0 32479:80     Forwarding from 0.0.0.0:32479 -> 8080 so here 8080
+      name: http
+      protocol: HTTP
+    hosts:
+    - "som.trycloud.co.in"    # "*"
+    - "sam.trycloud.co.in"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: bookinfo
+spec:
+  hosts:
+  - "som.trycloud.co.in"  #"*"
+  - "sam.trycloud.co.in"
+  gateways:
+  - bookinfo-gateway
+  http:
+  - match:
+    - headers:
+        user-agent:
+          regex: '.*Firefox.*'
+    route:
+    - destination:
+        host: productpage
+        port:
+          number: 9080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: productpage
+spec:
+  host: productpage
+  subsets:
+  - name: v1
+    labels:
+      version: v1      
+---------------------------------------------------------Redirecting and Rewriting Requests----------------------------------------------------------------------
+Matching headers and other request properties are helpful, but sometimes we might need to match the requests by the values in the request URI.
+
+EX:
+let’s consider a scenario where the incoming requests use the /v1/api path, and we want to route the requests to the /v2/api endpoint instead.
+
+The way to do that is to rewrite all incoming requests and authority/host headers that match the /v1/api to /v2/api.
+
+NOTE:
+Even though the destination service doesn’t listen on the /v1/api endpoint, Envoy will rewrite the request to /v2/api.
+
+---      
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: bookinfo-gateway
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 8080 #kubectl port-forward service/istio-ingressgateway -n istio-system  --address 0.0.0.0 32479:80     Forwarding from 0.0.0.0:32479 -> 8080 so here 8080
+      name: http
+      protocol: HTTP
+    hosts:
+    - "som.trycloud.co.in"    # "*"
+    - "sam.trycloud.co.in"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: bookinfo
+spec:
+  hosts:
+  - "som.trycloud.co.in"  #"*"
+  - "sam.trycloud.co.in"
+  gateways:
+  - bookinfo-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /productpage
+    rewrite:
+      uri: /login                #/productpage rewrite to /login
+    route:
+      - destination:
+          host: productpage.default.svc.cluster.local
+          port:
+            number: 9080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: productpage
+spec:
+  host: productpage
+  subsets:
+  - name: v1
+    labels:
+      version: v1      
+------------------------------------------------------------------------------------------------------------------------------------
+We also have the option of redirecting or forwarding the request to a completely different service.
+Here’s how we could match on a header and then redirect the request to another service:
+
+NOTE:
+The redirect and destination fields are mutually exclusive. If we use the redirect, there’s no need to set the destination.
+
+---      
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: bookinfo-gateway
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 8080 #kubectl port-forward service/istio-ingressgateway -n istio-system  --address 0.0.0.0 32479:80     Forwarding from 0.0.0.0:32479 -> 8080 so here 8080
+      name: http
+      protocol: HTTP
+    hosts:
+    - "som.trycloud.co.in"    # "*"
+    - "sam.trycloud.co.in"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: bookinfo
+spec:
+  hosts:
+  - "som.trycloud.co.in"  #"*"
+  - "sam.trycloud.co.in"
+  gateways:
+  - bookinfo-gateway
+  http:
+  - match:
+    - headers:
+        my-header:
+          exact: login
+    redirect:
+      uri: /login
+      authority: productpage.default.svc.cluster.local:9080   #you can drdirect to different service
+  
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: productpage
+spec:
+  host: productpage
+  subsets:
+  - name: v1
+    labels:
+      version: v1      
+------------------------------------------------------------------------------------------------------------------------------------
