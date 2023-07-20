@@ -8,3 +8,72 @@ and we can abort the HTTP request and return a specific HTTP error code to the c
 
 Here’s an example of aborting HTTP requests and returning HTTP 404, for 30% of the incoming requests:
 -----------------------------------------------------------------------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: details
+spec:
+  hosts:
+  - details
+  http:
+  - route:
+    - destination:
+        host: details.default.svc.cluster.local
+        subset: v1
+    fault:
+      abort:
+        percentage:
+          value: 30
+        httpStatus: 404
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: details
+spec:
+  host: details
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+--------------------------------------------------------------------------------------------------------------------------------------------
+If we don’t specify the percentage, the Envoy proxy will abort all requests. Note that the fault injection affects services that use that VirtualService. 
+It does not affect all consumers of the service.
+------------------------------------------------Similarly, we can apply an optional delay to the requests using the fixedDelay field:---------------------
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: details
+spec:
+  hosts:
+  - details
+  http:
+  - route:
+    - destination:
+        host: details.default.svc.cluster.local
+        subset: v1
+    fault:
+      abort:
+        percentage:
+          value: 30
+        fixedDelay: 3s
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: details
+spec:
+  host: details
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+-------------------------------------------------------------------------------------------------------------------------------------------
+The above setting will apply 3 seconds of delay to 5% of the incoming requests.
+
+Note that the fault injection will not trigger any retry policies we have set on the routes.
+
+EX:
+if we injected an HTTP 500 error, the retry policy configured to retry on the HTTP 500 will not be triggered.
+----------------------------------------------------------------------------------------------------------------------------------------------
