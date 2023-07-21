@@ -1,0 +1,23 @@
+----------------------------Reasons for cascading failures-------------------------------------
+Server overload
+
+Resource Exhaustion
+
+Service Unavailability
+
+--------------------------------how avoid ?--------------------------------------------------------------------
+Concurrency and rate limiting
+
+
+concurrency and rate limiting are related, but different concepts; two sides of the same coin.
+When thinking of limiting load in systems, operators traditionally think in terms of requests per second. 
+The act of limiting the rate of requests sent to a system is rate limiting. Stress tests are normally done to determine
+the request rate at which point the service will become overloaded, and then limits are set somewhere below this point. 
+In some cases, business logic dictates the rate limit.
+
+On the other side of the coin we have concurrency, that is how many units are in-use simultaneously. 
+These units can be requests, connections, etc. For example, instead of thinking in terms of request rate, 
+we can think about the number of concurrent in-flight request at a point in time. When we think about concurrent requests,
+we can apply queueing theory to determine the number of concurrent requests a service can handle before a queue starts
+to build, requests latencies increase, and the service fails due to resource exhaustion.   
+  --------------------------------------------------------------------------------------------------------------------------
