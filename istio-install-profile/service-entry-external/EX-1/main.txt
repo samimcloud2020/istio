@@ -90,11 +90,20 @@ Using Istio ServiceEntry configurations, you can access any publicly accessible 
 
 the controlled way of enabling access to external services, you need to change the meshConfig.outboundTrafficPolicy.mode option 
 from the ALLOW_ANY mode to the REGISTRY_ONLY mode.
+#####################################################################################################################################
+samim@ip-172-31-27-156:~/istio-1.18.1$ export PATH=$PWD/bin:$PATH
+samim@ip-172-31-27-156:~/istio-1.18.1$ istioctl install --set profile=demo                     --set meshConfig.outboundTrafficPolicy.mode=REGISTRY_ONLY
+This will install the Istio 1.18.1 demo profile with ["Istio core" "Istiod" "Ingress gateways" "Egress gateways"] components into the cluster. Proceed? (y/N) y
+✔ Istio core installed                                                                                                                                                      
+✔ Istiod installed                                                                                                                                                          
+✔ Ingress gateways installed                                                                                                                                                
+✔ Egress gateways installed                                                                                                                                                 
+✔ Installation complete                                                                                                                                                     Making this installation the default for injection and validation.
 
 
 $ istioctl install <flags-you-used-to-install-Istio> \
                    --set meshConfig.outboundTrafficPolicy.mode=REGISTRY_ONLY
-
+#################################################################################################################################################
 OR
 
 spec:
@@ -112,6 +121,8 @@ command terminated with exit code 35
 It may take a while for the configuration change to propagate, so you might still get successful connections.
 Wait for several seconds and then retry the last command.
 
+samim@ip-172-31-27-156:~/istio-1.18.1$ while true; do kubectl exec "$SOURCE_POD" -c sleep -- curl -sI https://www.google.com | grep  "HTTP/"; kubectl exec "$SOURCE_POD" -c sleep -- curl -sI https://edition.cnn.com | grep "HTTP/"; echo; done
+
 ---------------------------------------------Access an external HTTP service----------------------------------------------------------------------------
 Create a ServiceEntry to allow access to an external HTTP service.
 
@@ -121,13 +132,13 @@ metadata:
   name: httpbin-ext
 spec:
   hosts:
-  - httpbin.org
+  - manish.trycloud.co.in  #httpbin.org
   ports:
   - number: 80
     name: http
     protocol: HTTP
   resolution: DNS
-  location: MESH_EXTERNAL
+  location: MESH_EXTERNAL   # mesh external
 
 
 
@@ -144,12 +155,37 @@ $ kubectl exec "$SOURCE_POD" -c sleep -- curl -sS http://httpbin.org/headers
   }
 }
 
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl exec "$SOURCE_POD" -c sleep -- curl -sS -v http://manish.trycloud.co.in/home.html | grep envoy
+* processing: http://manish.trycloud.co.in/home.html
+*   Trying 52.216.163.10:80...
+* Connected to manish.trycloud.co.in (52.216.163.10) port 80
+> GET /home.html HTTP/1.1
+> Host: manish.trycloud.co.in
+> User-Agent: curl/8.2.0
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< x-amz-id-2: RZ0WbJ8SDaeY8kRnfeYbbdbIqMo5LhSS2ts3OPdJv3kwP7alM9rTsk1GnZVoMTS8ZMkIjGd6QFY=
+< x-amz-request-id: X0BVBMQK92JSQ5T6
+< date: Fri, 21 Jul 2023 17:47:43 GMT
+< last-modified: Wed, 12 Jul 2023 03:18:33 GMT
+< etag: "0aabefcffecbc943ca4e3dd60bd32234"
+< content-type: text/html
+< server: envoy    <--------------------------------------------------------------------------------
+< content-length: 2067
+< x-envoy-upstream-service-time: 70
+< 
+{ [2067 bytes data]
+* Connection #0 to host manish.trycloud.co.in left intact
+
+
+
 Note the headers added by the Istio sidecar proxy: X-Envoy-Decorator-Operation.
 
 Check the log of the sidecar proxy of SOURCE_POD:
 
-$ kubectl logs "$SOURCE_POD" -c istio-proxy | tail
-[2019-01-24T12:17:11.640Z] "GET /headers HTTP/1.1" 200 - 0 599 214 214 "-" "curl/7.60.0" "17fde8f7-fa62-9b39-8999-302324e6def2" "httpbin.org" "35.173.6.94:80" outbound|80||httpbin.org - 35.173.6.94:80 172.30.109.82:55314 -
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl logs "$SOURCE_POD" -c istio-proxy | grep -i manish.trycloud.co.in
+[2023-07-21T17:38:10.239Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 6360 82 81 "-" "curl/8.2.0" "5c0de9fd-e075-9039-813d-bcd22c0fd267" "manish.trycloud.co.in.s3-website-us-east-1.amazonaws.com" "52.216.62.85:80" outbound|80||manish.trycloud.co.in.s3-website-us-east-1.amazonaws.com 10.244.0.172:49928 52.217.110.147:80 10.244.0.172:55536 - default
 
 Note the entry related to your HTTP request to httpbin.org/headers.
 ---------------------------------------------Access an external HTTPS service--------------------------------------------------------------------------
@@ -180,6 +216,15 @@ Check the log of the sidecar proxy of SOURCE_POD:
 
 $ kubectl logs "$SOURCE_POD" -c istio-proxy | tail
 [2019-01-24T12:48:54.977Z] "- - -" 0 - 601 17766 1289 - "-" "-" "-" "-" "172.217.161.36:443" outbound|443||www.google.com 172.30.109.82:59480 172.217.161.36:443 172.30.109.82:59478 www.google.com
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$  kubectl logs "$SOURCE_POD" -c istio-proxy | tail
+[2023-07-21T17:55:15.424Z] "- - -" 0 UH - - "-" 0 0 2 - "-" "-" "-" "-" "-" BlackHoleCluster - 151.101.131.5:443 10.244.0.172:53592 edition.cnn.com -
+[2023-07-21T17:55:15.583Z] "- - -" 0 - - - "-" 820 5843 78 - "-" "-" "-" "-" "142.251.16.104:443" outbound|443||www.google.com 10.244.0.172:46524 142.251.16.106:443 10.244.0.172:60694 www.google.com -
+[2023-07-21T17:55:15.784Z] "- - -" 0 UH - - "-" 0 0 2 - "-" "-" "-" "-" "-" BlackHoleCluster - 151.101.195.5:443 10.244.0.172:50238 edition.cnn.com -
+[2023-07-21T17:55:15.939Z] "- - -" 0 - - - "-" 820 5841 81 - "-" "-" "-" "-" "142.251.16.103:443" outbound|443||www.google.com 10.244.0.172:33904 142.251.16.104:443 10.244.0.172:46526 www.google.com -
+
+
 
 Note the entry related to your HTTPS request to www.google.com.
 ---------------------------------------------------------------------------------------------------------------
