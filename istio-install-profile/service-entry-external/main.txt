@@ -85,4 +85,10 @@ spec:
     labels:
       app: customers  #label of pod
 
----------------------------------------------------------------------------------------------------------------
+--------------------------------------------MESH_INTERNAL VS MESH_EXTERNAL-------------------------------------------------------------------
+With MESH_INTERNAL setting in the location field, we say that this service is part of the mesh. 
+This value is typically used in cases when we include workloads on unmanaged infrastructure (VMs).
+The other value for this field, MESH_EXTERNAL, is used for external services consumed through APIs.
+The MESH_INTERNAL and MESH_EXTERNAL settings control how sidecars in the mesh attempt to communicate with the workload,
+including whether they’ll use Istio mutual TLS by default.
+-------------------------------------------------------------------------------------------------------------------------------------------
