@@ -82,5 +82,105 @@ HTTP/2 200
 
 Congratulations! You successfully sent egress traffic from your mesh.
 
-----------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------Controlled access to external services---------------------------------------------------------------------------
+Using Istio ServiceEntry configurations, you can access any publicly accessible service from within your Istio cluster.
+
+----------------------------------Change to the blocking-by-default policy--------------------------------------------------------------------------
+
+the controlled way of enabling access to external services, you need to change the meshConfig.outboundTrafficPolicy.mode option 
+from the ALLOW_ANY mode to the REGISTRY_ONLY mode.
+
+
+$ istioctl install <flags-you-used-to-install-Istio> \
+                   --set meshConfig.outboundTrafficPolicy.mode=REGISTRY_ONLY
+
+OR
+
+spec:
+  meshConfig:
+    outboundTrafficPolicy:
+      mode: REGISTRY_ONLY
+
+
+Make a couple of requests to external HTTPS services from SOURCE_POD to verify that they are now blocked:
+
+$ kubectl exec "$SOURCE_POD" -c sleep -- curl -sI https://www.google.com | grep  "HTTP/"; kubectl exec "$SOURCE_POD" -c sleep -- curl -sI https://edition.cnn.com | grep "HTTP/"
+command terminated with exit code 35
+command terminated with exit code 35
+
+It may take a while for the configuration change to propagate, so you might still get successful connections.
+Wait for several seconds and then retry the last command.
+
+---------------------------------------------Access an external HTTP service----------------------------------------------------------------------------
+Create a ServiceEntry to allow access to an external HTTP service.
+
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: httpbin-ext
+spec:
+  hosts:
+  - httpbin.org
+  ports:
+  - number: 80
+    name: http
+    protocol: HTTP
+  resolution: DNS
+  location: MESH_EXTERNAL
+
+
+
+Make a request to the external HTTP service from SOURCE_POD:
+
+$ kubectl exec "$SOURCE_POD" -c sleep -- curl -sS http://httpbin.org/headers
+{
+  "headers": {
+    "Accept": "*/*",
+    "Host": "httpbin.org",
+    ...
+    "X-Envoy-Decorator-Operation": "httpbin.org:80/*",
+    ...
+  }
+}
+
+Note the headers added by the Istio sidecar proxy: X-Envoy-Decorator-Operation.
+
+Check the log of the sidecar proxy of SOURCE_POD:
+
+$ kubectl logs "$SOURCE_POD" -c istio-proxy | tail
+[2019-01-24T12:17:11.640Z] "GET /headers HTTP/1.1" 200 - 0 599 214 214 "-" "curl/7.60.0" "17fde8f7-fa62-9b39-8999-302324e6def2" "httpbin.org" "35.173.6.94:80" outbound|80||httpbin.org - 35.173.6.94:80 172.30.109.82:55314 -
+
+Note the entry related to your HTTP request to httpbin.org/headers.
+---------------------------------------------Access an external HTTPS service--------------------------------------------------------------------------
+Create a ServiceEntry to allow access to an external HTTPS service.
+
+
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: google
+spec:
+  hosts:
+  - www.google.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL
+
+
+Make a request to the external HTTPS service from SOURCE_POD:
+
+$ kubectl exec "$SOURCE_POD" -c sleep -- curl -sSI https://www.google.com | grep  "HTTP/"
+HTTP/2 200
+
+Check the log of the sidecar proxy of SOURCE_POD:
+
+$ kubectl logs "$SOURCE_POD" -c istio-proxy | tail
+[2019-01-24T12:48:54.977Z] "- - -" 0 - 601 17766 1289 - "-" "-" "-" "-" "172.217.161.36:443" outbound|443||www.google.com 172.30.109.82:59480 172.217.161.36:443 172.30.109.82:59478 www.google.com
+
+Note the entry related to your HTTPS request to www.google.com.
+---------------------------------------------------------------------------------------------------------------
 
