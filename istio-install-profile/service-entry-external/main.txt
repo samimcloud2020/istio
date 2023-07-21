@@ -68,4 +68,21 @@ spec:
 -------------------------------------------------------------------------------------------------------------------
 We can now create a ServiceEntry resource that spans both the workloads running in Kubernetes as well as the VMs:
 
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: customers-svc
+spec:
+  hosts:
+  - customers.com
+  location: MESH_INTERNAL  #make internal to istio mesh
+  ports:
+  - number: 80
+    name: http
+    protocol: HTTP
+  resolution: STATIC
+  workloadSelector:
+    labels:
+      app: customers  #label of pod
 
+---------------------------------------------------------------------------------------------------------------
