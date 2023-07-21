@@ -90,5 +90,8 @@ spec:
 Istio improves the reliability and availability of services in the mesh.
 
 The basic intent of outlier detection is to stop sending requests to the unhealthy instance 
-and give it time to recover. In the meantime, the requests are redirected to the healthy instances such that the consumers are not impacted. The entire implementation of outlier detection is transparent to the application and involves no changes to the application code.
+and give it time to recover. 
+
+In the meantime, the requests are redirected to the healthy instances such that the consumers are not impacted. 
+The entire implementation of outlier detection is transparent to the application and involves no changes to the application code.
 
