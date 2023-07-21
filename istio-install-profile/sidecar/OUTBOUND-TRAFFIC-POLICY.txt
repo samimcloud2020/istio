@@ -16,3 +16,38 @@ Outbound traffic to unknown destinations will be allowed, in case there are no s
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
 
+$ istioctl install <flags-you-used-to-install-Istio> \
+                   --set meshConfig.outboundTrafficPolicy.mode=REGISTRY_ONLY
+$istioctl install --set profile=demo  \
+                   --set meshConfig.outboundTrafficPolicy.mode=REGISTRY_ONLY
+#################################################################################################################################################
+OR
+
+spec:
+  meshConfig:
+    outboundTrafficPolicy:
+      mode: REGISTRY_ONLY
+
+
+
+then 
+
+only defined seviceentry( external website) only be accessed.
+
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: google
+spec:
+  hosts:
+  - www.google.com   # only allowed.  but no any other website allowed from MESH.
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL
+-----------------------------------------------------------------------------------------------------------------
+
+
+
