@@ -1,0 +1,114 @@
+###############################fault injection on details##########################################
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: details
+spec:
+  hosts:
+  - details
+  http:
+  - fault:
+      abort:
+        httpStatus: 555  #abort with httpstatus 555 to downstream with 100% stop of traffic
+        percentage:
+          value: 100
+    route:
+    - destination:
+        host: details
+        subset: v1
+  - route:
+    - destination:
+        host: details
+        subset: v2
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: details
+spec:
+  host: details
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+
+
+
+###################for ingressgateway#######################################################################   
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: http-ingress-gateway
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 8080
+      name: http
+      protocol: HTTP
+    hosts:
+      - "som.trycloud.co.in"   # domain name of external website
+      - "sam.trycloud.co.in"
+---    
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-vs1
+  namespace: default
+spec:
+  hosts:
+    - "som.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+        - destination:
+            host: productpage
+            subset: v1
+          weight: 50
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-vs2
+  namespace: default
+spec:
+  hosts:
+    - "sam.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+        - destination:
+            host: productpage
+            subset: v2
+          weight: 50
+       
+---
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-ds1
+  namespace: default
+spec:
+  host: productpage
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+  subsets:
+    - labels:
+        version: v1
+      name: v1
+    - labels:
+        version: v2
+      name: v2
+   
