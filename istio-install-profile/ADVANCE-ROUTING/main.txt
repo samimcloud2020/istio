@@ -88,7 +88,9 @@ spec:
   - name: v1
     labels:
       version: v1      
-------------------------------------The above match will match any requests where the User Agent header matches the Regex.---------------------------------------------
+------------------------------------The above match will match any requests where the User Agent header matches the Regex.----------------------------------------
+samim@ip-172-31-27-156:~$ while true; do curl -s -A "Firefox"  http://sam.trycloud.co.in:32479/productpage  | grep title; echo; done;
+send user-agent with curl with -A option.
 
 ---      
 apiVersion: networking.istio.io/v1alpha3
