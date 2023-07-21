@@ -77,33 +77,7 @@ spec:
         ports:
         - containerPort: 9080
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: details-v2
-  labels:
-    app: details
-    version: v2
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: details
-      version: v2
-  template:
-    metadata:
-      labels:
-        app: details
-        version: v2
-    spec:
-      serviceAccountName: bookinfo-details
-      containers:
-      - name: details
-        image: docker.io/istio/examples-bookinfo-details-v1:1.18.0
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 9080
----        
+
 ##################################################################################################
 # Ratings service
 ##################################################################################################
