@@ -32,4 +32,68 @@ This global default Sidecar configuration should not have any workloadSelector.
 
 NOTE 3: 
 A Sidecar is not applicable to gateways, even though gateways are istio-proxies.
---------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------EXAMPLE-1-------------------------------------------------------------------------------------------------------
+declares a global default Sidecar configuration in the root namespace called istio-config, that configures sidecars in all namespaces 
+to allow egress traffic only to other workloads in the same namespace as well as to services in the istio-system namespace.
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: default
+  namespace: istio-config
+spec:
+  egress:
+  - hosts:
+    - "./*"
+    - "istio-system/*"
+
+----------------------------------------------------EXAMPLE-2-----------------------------------------------------------------------------------------------
+declares a Sidecar configuration in the prod-us1 namespace that overrides the global default defined above, and
+configures the sidecars in the namespace to allow egress traffic to public services in the prod-us1, prod-apis, and the istio-system namespaces.
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: default
+  namespace: prod-us1
+spec:
+  egress:
+  - hosts:
+    - "prod-us1/*"
+    - "prod-apis/*"
+    - "istio-system/*"
+
+-----------------------------------------------------------EXAMPLE-3------------------------------------------------------------------------------------------------
+declares a Sidecar configuration in the prod-us1 namespace for all pods with labels app: ratings belonging to the ratings.prod-us1 service. 
+The workload accepts inbound HTTP traffic on port 9080. The traffic is then forwarded to the attached workload instance listening on a Unix domain socket.
+
+In the egress direction, in addition to the istio-system namespace, the sidecar proxies only HTTP traffic bound for port 9080 for services in the prod-us1 namespace.
+
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: ratings
+  namespace: prod-us1
+spec:
+  workloadSelector:
+    labels:
+      app: ratings
+  ingress:
+  - port:
+      number: 9080
+      protocol: HTTP
+      name: somename
+    defaultEndpoint: unix:///var/run/someuds.sock
+  egress:
+  - port:
+      number: 9080
+      protocol: HTTP
+      name: egresshttp
+    hosts:
+    - "prod-us1/*"
+  - hosts:
+    - "istio-system/*"
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
