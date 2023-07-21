@@ -211,8 +211,6 @@ Here’s how we could match on a header and then redirect the request to another
 NOTE:
 The redirect and destination fields are mutually exclusive. If we use the redirect, there’s no need to set the destination.
 
-samim@ip-172-31-27-156:~$ curl -H "my-header: login"  http://sam.trycloud.co.in:32479/productpage
-
 
 ---      
 apiVersion: networking.istio.io/v1alpha3
@@ -250,7 +248,7 @@ spec:
           exact: login
     redirect:
       uri: /login
-      authority: productpage.default.svc.cluster.local:9080   #you can drdirect to different service
+      authority: productpage.default.svc.cluster.local:9080   #you can drdirect to different service    http://sam.trycloud.co.in:32479
   
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -263,6 +261,26 @@ spec:
   - name: v1
     labels:
       version: v1      
+
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ curl -v -H "my-header:login"  http://sam.trycloud.co.in:32479
+*   Trying 54.234.238.213:32479...
+* Connected to sam.trycloud.co.in (54.234.238.213) port 32479 (#0)
+> GET / HTTP/1.1
+> Host: sam.trycloud.co.in:32479
+> User-Agent: curl/7.81.0
+> Accept: */*
+> my-header:login
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 301 Moved Permanently
+< location: http://productpage.default.svc.cluster.local:9080/login   <-------------------------------------------------------
+< date: Fri, 21 Jul 2023 16:53:08 GMT
+< server: istio-envoy
+< content-length: 0
+< 
+* Connection #0 to host sam.trycloud.co.in left intact
 ------------------------------------------------AND  semantics------------------------------------------------------------------------------------
 The above snippet uses the AND semantics. It means that both the URI prefix needs to match /v1 AND the header my-header has an exact value hello.
 
