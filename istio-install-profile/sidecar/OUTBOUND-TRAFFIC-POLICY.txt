@@ -1,0 +1,18 @@
+-------------------------OutboundTrafficPolicy--------------------------------------------------------
+OutboundTrafficPolicy sets the default behavior of the sidecar for handling outbound traffic from the application.
+
+If your application uses one or more external services that are not known apriori, setting the policy to ALLOW_ANY 
+will cause the sidecars to route any unknown traffic originating from the application to its requested destination.
+
+Users are strongly encouraged to use ServiceEntry configurations to explicitly declare any external dependencies, 
+instead of using ALLOW_ANY, so that traffic to these services can be monitored.
+
+------------------------OutboundTrafficPolicy.Mode------------------------------------------------------------
+REGISTRY_ONLY	
+Outbound traffic will be restricted to services defined in the service registry as well as those defined through ServiceEntry configurations.
+
+ALLOW_ANY	
+Outbound traffic to unknown destinations will be allowed, in case there are no services or ServiceEntry configurations for the destination port.
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+
