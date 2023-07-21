@@ -211,6 +211,9 @@ Here’s how we could match on a header and then redirect the request to another
 NOTE:
 The redirect and destination fields are mutually exclusive. If we use the redirect, there’s no need to set the destination.
 
+samim@ip-172-31-27-156:~$ curl -H "my-header: login"  http://sam.trycloud.co.in:32479/productpage
+
+
 ---      
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
