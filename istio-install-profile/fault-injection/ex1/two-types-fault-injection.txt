@@ -1,0 +1,9 @@
+-----------------only 2 types of faults that you can inject in your system with Istio:---------------------------------------
+
+Delay: Introducing Time Delays between different micro services call to simulate failures such as network issues, overloaded upstream service, etc.
+
+
+
+Abort: Aborting requests and returning 500 or 503 errors to the downstream service simulating faults in the upstream service. 
+With this, you can understand how well your system handles error.
+-------------------------------------------------------------------------------------------------------------------------------------------------
