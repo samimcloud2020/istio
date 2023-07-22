@@ -44,7 +44,7 @@ metadata:
 spec:
   egress:
   - hosts:
-    - "./*"
+    - "./*"           #sidecars in all namespaces to allow egress traffic only
     - "istio-system/*"
 
 ----------------------------------------------------EXAMPLE-2-----------------------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ metadata:
   name: default
   namespace: prod-us1
 spec:
-  egress:
+  egress:     #sidecars in the prod-us1 namespace to allow egress traffic to public services in the prod-us1, prod-apis, and the istio-system namespaces.
   - hosts:
     - "prod-us1/*"
     - "prod-apis/*"
