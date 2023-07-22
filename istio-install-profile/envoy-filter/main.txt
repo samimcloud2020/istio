@@ -127,8 +127,16 @@ content-length: 2471
 etag: W/"9a7-hEXE7lJW5CDgD+e2FypGgChcgho"
 date: Tue, 17 Nov 2020 00:40:16 GMT
 x-envoy-upstream-service-time: 32
-api-version: v1
+api-version: v1   <----------------------------------------------------------
 server: istio-envoy
 
 
-$ curl -s -I -X HEAD http://som.trycloud.co.in:32479/productpage
+samim@ip-172-31-27-156:~/istio-1.18.1$ curl -s -I -X HEAD http://sam.trycloud.co.in:32479
+HTTP/1.1 200 OK
+server: istio-envoy   <-------------------------------------------------------
+date: Sat, 22 Jul 2023 06:59:44 GMT
+content-type: text/html; charset=utf-8
+content-length: 1683
+x-envoy-upstream-service-time: 2
+
+
