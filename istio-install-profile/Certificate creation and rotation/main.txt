@@ -1,0 +1,6 @@
+For every workload in the mesh, Istio provisions an X.509 certificate.
+
+An agent called pilot-agent runs next to each Envoy proxy 
+and 
+works together with the control plane (istiod) to automate key and certificate rotation.
+--------------------------------------------------------------------------------------------------------------
