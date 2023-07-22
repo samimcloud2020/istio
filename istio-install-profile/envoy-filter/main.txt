@@ -10,6 +10,81 @@ The filters are additively applied, meaning there can be any number of filters f
 The filters in the root namespace (e.g. istio-system) are applied first, followed by all matching filters in the workloads’ namespace.
 
 ---------------------------------EnvoyFilter that adds a header called api-version to the request.-----------------------------
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: http-ingress-gateway
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 8080
+      name: http
+      protocol: HTTP
+    hosts:
+      - "som.trycloud.co.in"   # domain name of external website
+      - "sam.trycloud.co.in"
+---    
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-vs1
+  namespace: default
+spec:
+  hosts:
+    - "som.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+        - destination:
+            host: productpage
+            subset: v1
+          weight: 50
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-vs2
+  namespace: default
+spec:
+  hosts:
+    - "sam.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+        - destination:
+            host: productpage
+            subset: v2
+          weight: 50
+       
+---
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: productpage-ds1
+  namespace: default
+spec:
+  host: productpage
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+  subsets:
+    - labels:
+        version: v1
+      name: v1
+    - labels:
+        version: v2
+      name: v2
+   
+---
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
@@ -18,7 +93,7 @@ metadata:
 spec:
   workloadSelector:
     labels:
-      app: web-frontend    # this label is on workload , which connect gateway
+      version: v1    # this label is on workload , which connect gateway
   configPatches:
   - applyTo: HTTP_FILTER
     match:
@@ -54,3 +129,6 @@ date: Tue, 17 Nov 2020 00:40:16 GMT
 x-envoy-upstream-service-time: 32
 api-version: v1
 server: istio-envoy
+
+
+$ curl -s -I -X HEAD http://som.trycloud.co.in:32479/productpage
