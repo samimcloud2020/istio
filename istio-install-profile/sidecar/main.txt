@@ -49,9 +49,9 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Sidecar
 metadata:
   name: default-sidecar
-  namespace: default
+  namespace: default   #sidecar proxies can able to access services in namespace (default ns, istio-system ns, staging ns )
 spec:
-  egress:
+  egress:              # sidecar egress
   - hosts:
     - "default/*"
     - "istio-system/*"
@@ -68,7 +68,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Sidecar
 metadata:
   name: default-sidecar
-  namespace: default
+  namespace: default  #sidecar proxies can able to access services in namespace (default ns, istio-system ns, staging ns ) and workloadselector select by label.
 spec:
   workloadSelector:
     labels:
@@ -88,12 +88,18 @@ Each ingress listener needs a port set where the traffic will be received (for e
 The default endpoint can either be a loopback IP endpoint or a Unix domain socket. The endpoint configures where Envoy forwards the traffic.
 
 ...
-  ingress:
-  - port:
-      number: 3000
-      protocol: HTTP
-      name: somename
-    defaultEndpoint: 127.0.0.1:8080
+ apiVersion: networking.istio.io/v1alpha3
+ kind: Sidecar
+ metadata:
+  name: default-sidecar
+  namespace: default  #on default ns, sidecar proxy listen on port 3000, with http and a default endpoint 127.0.0.1:8080
+ spec:
+   ingress:
+   - port:
+       number: 3000
+       protocol: HTTP
+       name: somename
+     defaultEndpoint: 127.0.0.1:8080
 ...
 
 
@@ -102,12 +108,20 @@ where your service is listening to. Additionally, we could set the bind field to
 where we want the proxy to listen for the incoming traffic. Finally, we can use the field captureMode to configure 
 how and if traffic even gets captured.
 
-egress:
-  - port:
-      number: 8080            #BOUND ON PORT 8080
-      protocol: HTTP
-    hosts:
-    - "staging/*"             #NAMESPACE
+         ---------------ingress-----(NAMESPACE &PORT & PROTOCOL)------>sidecar------------------egress----------(NAMESPACE &PORT & PROTOCOL)-------->
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: default-sidecar
+  namespace: default  
+spec:
+  egress:
+    - port:
+        number: 8080            #forwad traffic must BOUND ON PORT 8080 with http only
+        protocol: HTTP
+      hosts:
+        - "staging/*"             #forward to NAMESPACE staging only
 
 With the YAML above, the sidecar proxies the traffic that’s bound for port 8080 for services running in the staging namespace.
 ---------------------------------------------------------------------------------------------------------------------------------------------
