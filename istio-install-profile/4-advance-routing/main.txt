@@ -1,0 +1,216 @@
+---------we will learn how to use request properties to route the traffic between multiple service versions.----------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - '*'
+
+Next, we will deploy the Web Frontend, Customers v1, Customers v2, and the corresponding VirtualServices and DestinationRule.
+Once we deploy everything, all traffic gets routed to the Customers v1.
+
+-----------------------------------------v1---------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-frontend
+  labels:
+    app: web-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-frontend
+  template:
+    metadata:
+      labels:
+        app: web-frontend
+        version: v1
+    spec:
+      containers:
+        - image: gcr.io/tetratelabs/web-frontend:1.0.0
+          imagePullPolicy: Always
+          name: web
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CUSTOMER_SERVICE_URL
+              value: 'http://customers.default.svc.cluster.local'
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: web-frontend
+  labels:
+    app: web-frontend
+spec:
+  selector:
+    app: web-frontend
+  ports:
+    - port: 80
+      name: http
+      targetPort: 8080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: web-frontend
+spec:
+  hosts:
+    - '*'
+  gateways:
+    - gateway
+  http:
+    - route:
+        - destination:
+            host: web-frontend.default.svc.cluster.local
+            port:
+              number: 80
+
+
+
+
+
+----------------------------v1 & v2----------------------------------------------------------------------------
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-v1
+  labels:
+    app: customers
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customers
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: customers
+        version: v1
+    spec:
+      containers:
+        - image: gcr.io/tetratelabs/customers:1.0.0
+          imagePullPolicy: Always
+          name: svc
+          ports:
+            - containerPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-v2
+  labels:
+    app: customers
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customers
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: customers
+        version: v2
+    spec:
+      containers:
+        - image: gcr.io/tetratelabs/customers:2.0.0
+          imagePullPolicy: Always
+          name: svc
+          ports:
+            - containerPort: 3000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: customers
+  labels:
+    app: customers
+spec:
+  selector:
+    app: customers
+  ports:
+    - port: 80
+      name: http
+      targetPort: 3000
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: customers
+spec:
+  hosts:
+    - 'customers.default.svc.cluster.local'
+  http:
+    - route:
+        - destination:
+            host: customers.default.svc.cluster.local
+            port:
+              number: 80
+            subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: customers
+spec:
+  host: customers.default.svc.cluster.local
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2
+
+------------------------------------------v2    with  header user: debug------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: customers
+spec:
+  hosts:
+    - 'customers.default.svc.cluster.local'
+  http:
+  - match:
+    - headers:         # header excat: debug route to v2, if not match then v1.
+        user:
+          exact: debug
+    route:
+    - destination:
+        host: customers.default.svc.cluster.local
+        port:
+          number: 80
+        subset: v2
+  - route:
+      - destination:
+          host: customers.default.svc.cluster.local
+          port:
+            number: 80
+          subset: v1
+
+
+----------------------------------mode header in browser and curl-------------------------------------------------------------
+We can use the ModHeader extension to modify the headers from the browser. Alternatively, we can use cURL and
+add the header to the request like this:
+
+$ curl -H "user: debug" http://GATEWAY_URL/
+...
+<th class="px-4 py-2">CITY</th>
+<th class="px-4 py-2">NAME</th>
+...
+
+---------------------------------------------------------------------------------------------------------------------
