@@ -17,6 +17,7 @@ spec:
         protocol: HTTP
       hosts:
         - 'som.trycloud.co.in'
+        - 'sam.trycloud.co.in'
 
 
 
@@ -162,5 +163,62 @@ web-frontend-8ddc5b86b-vb9p7    1/1     Running   0          4m50s
 
 
 
+samim@ip-172-31-27-156:~/istio-1.18.1/test$ while true; do curl -s http://som.trycloud.co.in:32479 | grep title; echo; done
+    <title>Web Frontend</title>
+----------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: customers
+  namespace: test
+spec:
+  hosts:
+    - 'sam.trycloud.co.in'
+  gateways:
+    - gateway                  #gateway direct connect to customers service
+  http:
+    - route:
+        - destination:
+            host: customers.test.svc.cluster.local
+            port:
+              number: 80
 
-              
+
+------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio-1.18.1/test$ curl http://sam.trycloud.co.in:32479
+[{"name":"Jewel Schaefer"},{"name":"Raleigh Larson"},{"name":"Eloise Senger"},{"name":"Moshe Zieme"},{"name":"Filiberto Lubowitz"},{"name":"Ms.Kadin Kling"},{"name":"Jennyfer Bergstrom"},{"name":"Candelario Rutherford"},{"name":"Kenyatta Flatley"},{"name":"Gianni Pouros"}]
+
+----------------------------------------------------------------------
+
+samim@ip-172-31-27-156:~/istio-1.18.1/test$while true; do  curl http://sam.trycloud.co.in:32479; echo; done
+[{"name":"Jewel Schaefer"},{"name":"Raleigh Larson"},{"name":"Eloise Senger"},{"name":"Moshe Zieme"},{"name":"Filiberto Lubowitz"},{"name":"Ms.Kadin Kling"},{"name":"Jennyfer Bergstrom"},{"name":"Candelario Rutherford"},{"name":"Kenyatta Flatley"},{"name":"Gianni Pouros"}]
+
+
+samim@ip-172-31-27-156:~$ while true; do curl -s http://som.trycloud.co.in:32479 | grep title; echo; done
+    <title>Web Frontend</title>
+-----------------------------see kali-------------------------------------------------------------
+unknown ---------plaintest-------webfront
+
+istoingressgateway-------mtls------customers
+
+
+this means
+
+ingressgateway----------mtls------->customers
+ingressgateway----------plaintext------->webfront
+
+---------------------------------------------------------------------------------
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication   # svc to svc communication
+metadata:
+  name: default
+  namespace: test
+spec:
+  mtls:
+    mode: STRICT
+
+
+ingressgateway----------mtls------->customers             <---------working
+frontend(no envoy)--------------------------->customers(envoy)             <---------failing, as STRICT mode mtls (
+                                                                      customers side closed con as want mtls but frontend can not)
+-------------------------------------------------------------------------------------
