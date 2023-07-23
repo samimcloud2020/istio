@@ -1,0 +1,51 @@
+Traffic rerouted through proxies.
+
+envoy start mtls handshake.
+
+secure naming check is done.
+
+once mtls connection is established.
+
+request forwarded to server-side proxy.
+
+server-side  forwarded traffic to workload.
+-----------------------------------------------------------------------------------
+DISABLE: no tls con
+
+SIMPLE: originate to upstream.
+
+MUTUAL: use mtls and certs for auth.
+
+ISTIO_MUTUAL: like MUTUAL but use istio certs for mtls.
+
+----------------permissive mode-----------------------------------------------------------------------
+allow services to accept both plaintext and mtls.
+
+improve mtls onbording experience.
+
+gradually install/configure sidecar for mtls.
+
+-----------------------------------globally across the mesh-----------------------------------------------------------
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
+------------------------------namespace based---with selected workload with label----------------------------------------------
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: my-namespace
+spec:
+  selector:
+    matchLabels:
+      app: customers
+  mtls:
+    mode: STRICT
+
+---------------------------------------------------------------------------------    
+    
