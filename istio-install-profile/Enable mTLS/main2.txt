@@ -1,0 +1,166 @@
+samim@ip-172-31-27-156:~/istio-1.18.1/test$ k create ns test
+namespace/test created
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: gateway
+  namespace: test
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - 'som.trycloud.co.in'
+
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-frontend
+  namespace: test
+  labels:
+    app: web-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-frontend
+  template:
+    metadata:
+      labels:
+        app: web-frontend
+        version: v1
+    spec:
+      containers:
+        - image: gcr.io/tetratelabs/web-frontend:1.0.0
+          imagePullPolicy: Always
+          name: web
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CUSTOMER_SERVICE_URL
+              value: 'http://customers.default.svc.cluster.local'
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: web-frontend
+  namespace: test
+  labels:
+    app: web-frontend
+spec:
+  selector:
+    app: web-frontend
+  ports:
+    - port: 80
+      name: http
+      targetPort: 8080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: web-frontend
+  namespace: test
+spec:
+  hosts:
+    - 'som.trycloud.co.in'
+  gateways:
+    - gateway
+  http:
+    - route:
+        - destination:
+            host: web-frontend.default.svc.cluster.local
+            port:
+              number: 80
+---
+
+
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1/test$ k get po -n test
+NAME                           READY   STATUS    RESTARTS   AGE
+web-frontend-8ddc5b86b-vb9p7   1/1     Running   0          45s
+
+
+----------------------------------------------------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio-1.18.1/test$ kubectl label namespace test  istio-injection=enabled
+namespace/test labeled
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-v1
+  namespace: test
+  labels:
+    app: customers
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customers
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: customers
+        version: v1
+    spec:
+      containers:
+        - image: gcr.io/tetratelabs/customers:1.0.0
+          imagePullPolicy: Always
+          name: svc
+          ports:
+            - containerPort: 3000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: customers
+  namespace: test
+  labels:
+    app: customers
+spec:
+  selector:
+    app: customers
+  ports:
+    - port: 80
+      name: http
+      targetPort: 3000
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: customers
+  namespace: test
+spec:
+  hosts:
+    - 'customers.default.svc.cluster.local'
+  http:
+    - route:
+        - destination:
+            host: customers.default.svc.cluster.local
+            port:
+              number: 80
+---
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1/test$ k get po -n test
+NAME                            READY   STATUS    RESTARTS   AGE
+customers-v1-5489c98c64-pfc9l   2/2     Running   0          87s
+web-frontend-8ddc5b86b-vb9p7    1/1     Running   0          4m50s
+
+
+
+
+              
