@@ -48,7 +48,58 @@ NAME                    TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)   AG
 istio-eastwestgateway   LoadBalancer   10.80.6.124   34.75.71.237   ...       51s
 
 ###########Expose the control plane in cluster1#####################################################################################
-Before we can install on cluster2, we need to first expose the control plane in cluster1 so that services in cluster2 will be able to access service discovery:
+Before we can install on cluster2, we need to first expose the control plane in cluster1 so that services 
+in cluster2 will be able to access service discovery:
 
 $ kubectl apply --context="${CTX_CLUSTER1}" -n istio-system -f \
     expose-istiod.yaml
+####################Set the control plane cluster for cluster2##############################################################
+We need identify the external control plane cluster that should manage cluster2 by annotating the istio-system namespace:
+
+$ kubectl --context="${CTX_CLUSTER2}" create namespace istio-system
+$ kubectl --context="${CTX_CLUSTER2}" annotate namespace istio-system topology.istio.io/controlPlaneClusters=cluster1
+
+Setting the topology.istio.io/controlPlaneClusters namespace annotation to cluster1 instructs the istiod running 
+in the same namespace (istio-system in this case) on cluster1 to manage cluster2 when it is attached as a remote cluster.
+
+#################Configure cluster2 as a remote#################################################################
+Save the address of cluster1’s east-west gateway.
+
+$ export DISCOVERY_ADDRESS=$(kubectl \
+    --context="${CTX_CLUSTER1}" \
+    -n istio-system get svc istio-eastwestgateway \
+    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+Now create a remote configuration for cluster2.
+
+$ cat <<EOF > cluster2.yaml
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: remote
+  values:
+    istiodRemote:
+      injectionPath: /inject/cluster/cluster2/net/network1
+    global:
+      remotePilotAddress: ${DISCOVERY_ADDRESS}
+EOF
+
+
+Apply the configuration to cluster2:
+
+$ istioctl install --context="${CTX_CLUSTER2}" -f cluster2.yaml
+
+###########Attach cluster2 as a remote cluster of cluster1##########################################################
+To provide API Server access to cluster2, we generate a remote secret and apply it to cluster1:
+
+$ istioctl x create-remote-secret \
+    --context="${CTX_CLUSTER2}" \
+    --name=cluster2 | \
+    kubectl apply -f - --context="${CTX_CLUSTER1}"
+
+Congratulations! You successfully installed an Istio mesh across primary and remote clusters!
+#############################################################################################################
+
+
+
+
