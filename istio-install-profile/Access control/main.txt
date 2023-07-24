@@ -216,7 +216,7 @@ The DENY policy is in effect, and we are only allowing calls to be made from the
 
 ------------------------------------------------------------------------------------------------------------
 When we deployed the web frontend, we also created a service account for the Pod (otherwise, 
-all Pods in the namespace are assigned the default service account).
+all Pods in the namespace are assigned the default service account).   <-----------------------MOST IMPORTANT
 We can now use that service account to specify where the customer service calls can come from.
 
 
@@ -226,7 +226,7 @@ metadata:
   name: allow-web-frontend-customers
   namespace: default
 spec:
-  selector:
+  selector:    # svc customers workload allowed to svc webfront .(on default ns )
     matchLabels:
         app: customers
         version: v1
