@@ -80,5 +80,19 @@ spec:
       name: v2
 
 ---
-
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+ name: reviews-deny
+ namespace: default
+spec:
+ selector:
+   matchLabels:
+     app: reviews
+     version: v1
+ action: DENY   #to DENY the request (action) sent to the reviews v1 workloads when the requests are coming from outside of the default namespace.
+ rules:
+ - from:
+   - source:
+       notNamespaces: ["default"]
    
