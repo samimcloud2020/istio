@@ -1,0 +1,9 @@
+---------------------------MESH DEPLOYMENT MODEL-----------------------------------------------
+SERVICE COMMUNICATES ACROSS MESH BOUNDARIES.
+
+CLEANER ORGANIZATIONAL BOUNDARY.
+
+STRONGER ISOLATION.
+
+REUSE SERVICE NAMES AND NAMESPACES.
+-----------------------------------------------------------------------------------------------
