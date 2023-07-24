@@ -1,1 +1,30 @@
+What is a cluster in Envoy?
+
+Group of similar upstream hosts that accept traffic - a collection of endpoints
+----------------------------------------------------------------------------------
+Where are the circuit breakers defined?
+
+In clusters configuration
+----------------------------------------------------------------------------------
+Which Istio CLI command can you use to list all listeners?
+
+istioctl proxy-config listeners
+-------------------------------------------------------------------------------
+What type of traffic is routed to the port 15006?
+
+Inbound Pod traffic
+-------------------------------------------------------------------------------
+Envoy generates a single listener for each sidecar. (True/False)
+
+False
+--------------------------------------------------------------------------------
+What happens if the virtual listener can’t find the destination of the request?
+
+It sends traffic according to the OutboundTrafficPolicy
+----------------------------------------------------------------------------------------
+Which service does the listener use to find the route configuration?
+
+RDS (route discovery service)
+---------------------------------------------------------------------------------------
+What are the basic Envoy concepts?
 
