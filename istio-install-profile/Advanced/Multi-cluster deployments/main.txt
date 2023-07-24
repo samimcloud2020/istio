@@ -77,4 +77,21 @@ When traffic is sent to service Customers, load balancing is done across merged 
 as shown in the following figure.
 
 
+To configure cluster tenancy in Istio we need to configure each cluster as an independent service mesh. 
+The meshes can be controlled and operated by separate teams and we can connect the meshes together into a multi-mesh deployment.
+If we use the same example as before, service Customers running in the default namespace in cluster 
+A does not refer to the same service as service Customers from the default namespace in cluster B.
 
+Another important part of the tenancy is isolating configuration from different tenants. 
+At the moment, Istio does not address this issue, however, it encourages it through configuration 
+that’s scoped at the namespace level.
+----------------------------------Best multi-cluster deployment------------------------------------------------------------
+The best multi-cluster deployment topology is one where each cluster has its own control plane. 
+For normal service mesh deployments at scale, it is recommended you use multi-mesh deployments and have a separate system
+that’s orchestrating the meshes externally. 
+
+It is generally recommended to always use ingress gateways across clusters, even if they span a single network.
+Direct pod to pod connectivity requires populating endpoint data across multiple clusters
+which can slow down and complicate things.
+A simpler solution is to have traffic flow through ingresses across clusters instead.
+-----------------------------------------------------------------------------------------------------------------------
