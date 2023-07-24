@@ -3,7 +3,7 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
  name: deny-all   #deny all on default namespace
- namespace: default
+ namespace: default  #samim@ip-172-31-27-156:~$ curl -s http://som.trycloud.co.in:32479        RBAC: access denied
 spec:
   {}
 ---  
