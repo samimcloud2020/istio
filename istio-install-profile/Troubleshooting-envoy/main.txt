@@ -28,3 +28,5 @@ RDS (route discovery service)
 ---------------------------------------------------------------------------------------
 What are the basic Envoy concepts?
 
+listeners, routes, clusters, and endpoints
+-----------------------------------------------------------------------------------
