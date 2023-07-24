@@ -14,3 +14,30 @@ Service workloads communicate directly (pod-to-pod) across cluster boundaries.
 -----------------------------------------------------------------------------------------------------------------
 Services in cluster2 will reach the control plane in cluster1 via a dedicated gateway for east-west traffic.
 
+--------------------------Configure cluster1 as a primary--------------------------------------------------
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  values:
+    global:
+      meshID: mesh1
+      multiCluster:
+        clusterName: cluster1
+      network: network1
+
+
+$ istioctl install --set values.pilot.env.EXTERNAL_ISTIOD=true --context="${CTX_CLUSTER1}" -f cluster1.yaml
+
+Notice that values.pilot.env.EXTERNAL_ISTIOD is set to true. This enables the control plane installed on cluster1 to also serve as 
+an external control plane for other remote clusters. When this feature is enabled, istiod will attempt to acquire the leadership lock, 
+and consequently manage, appropriately annotated remote clusters that will be attached to it (cluster2 in this case).
+
+###############################Install the east-west gateway in cluster1########################################################################
+Install a gateway in cluster1 that is dedicated to east-west traffic. By default, this gateway will be public on the Internet. 
+Production systems may require additional access restrictions (e.g. via firewall rules) to prevent external attacks.
+Check with your cloud vendor to see what options are available.
+
+$ gen-eastwest-gateway.sh \
+    --mesh mesh1 --cluster cluster1 --network network1 | \
+    istioctl --context="${CTX_CLUSTER1}" install -y -f -
+
