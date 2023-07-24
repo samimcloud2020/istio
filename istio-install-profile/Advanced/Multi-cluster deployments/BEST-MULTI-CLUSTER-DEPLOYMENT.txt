@@ -1,0 +1,11 @@
+-----------------------------best multi cluster deployment---------------------------------
+each cluster has its own control plane.
+
+use multi mesh deployments.
+
+external system for orchestrates for meshes.
+
+always use ingress gateway across cluster.
+
+pod to pod communication can slow down and complicated.
+-----------------------------------------------------------------
