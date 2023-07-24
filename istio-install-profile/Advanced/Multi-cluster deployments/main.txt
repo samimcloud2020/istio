@@ -15,3 +15,23 @@ to reach workloads in other clusters.
 The use of multiple networks allows for better fault tolerance and scaling of network addresses.
 
 see pic.   Multi-network service mesh
+-----------Control plane deployment models--------------------------------------------------------------------------
+Istio service mesh uses the control plane to configure all communications between workloads inside the mesh.
+The control plane the workloads connect to depends on their configuration.
+
+In the simplest case, we have a service mesh with a single control plane in a single cluster.
+This is the configuration we’ve been using throughout this course.
+
+The shared control plane model involves multiple clusters where the control plane is running in one cluster only.
+That cluster is referred to as a primary cluster, while other clusters in the deployment are called remote clusters. 
+These clusters don’t have their own control plane, instead, they are sharing the control plane from the primary cluster.
+
+see pic.  Shared control plane
+-------------------------another deployment model-------------------------------------------------------------------
+Another deployment model is where we treat all clusters as remote clusters that are controlled by an external control plane. 
+This gives us a complete separation between the control plane and the data plane. 
+A typical example of an external control plane is when a cloud vendor is managing it.
+
+For high availability, we should deploy multiple control plane instances across multiple clusters, zones, or regions .
+
+see pic.  
