@@ -41,3 +41,14 @@ $ gen-eastwest-gateway.sh \
     --mesh mesh1 --cluster cluster1 --network network1 | \
     istioctl --context="${CTX_CLUSTER1}" install -y -f -
 
+Wait for the east-west gateway to be assigned an external IP address:
+
+$ kubectl --context="${CTX_CLUSTER1}" get svc istio-eastwestgateway -n istio-system
+NAME                    TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)   AGE
+istio-eastwestgateway   LoadBalancer   10.80.6.124   34.75.71.237   ...       51s
+
+###########Expose the control plane in cluster1#####################################################################################
+Before we can install on cluster2, we need to first expose the control plane in cluster1 so that services in cluster2 will be able to access service discovery:
+
+$ kubectl apply --context="${CTX_CLUSTER1}" -n istio-system -f \
+    expose-istiod.yaml
