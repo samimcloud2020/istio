@@ -1,0 +1,9 @@
+--------------------TENANCY MODEL----------------------------------------------------
+TENANT=GROUP OF USERS SHARING COMMON ACCESS & PRIVILEGES TO WORKLOADS.
+
+N/W CONFIG & POLICIES USED FOR ISOLATION.
+
+ISTIO: NAMESPACE & CLUSTER TENANCIES (SOFT MULTI-TENANCY).
+
+NAMESPACE IS A UNIT OF TENANCY.
+---------------------------------------------------------------------------------------
