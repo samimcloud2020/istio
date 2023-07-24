@@ -217,8 +217,37 @@ spec:
   mtls:
     mode: STRICT
 
-
+ingressgateway----------plaintext------->webfront      <--------not work
 ingressgateway----------mtls------->customers             <---------working
 frontend(no envoy)--------------------------->customers(envoy)             <---------failing, as STRICT mode mtls (
                                                                       customers side closed con as want mtls but frontend can not)
 -------------------------------------------------------------------------------------
+samim@ip-172-31-27-156:~/istio-1.18.1$ k get peerauthentication -n test
+NAME      MODE     AGE
+default   STRICT   8h
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k describe  peerauthentication default  -n test
+Name:         default
+Namespace:    test
+Labels:       <none>
+Annotations:  <none>
+API Version:  security.istio.io/v1beta1
+Kind:         PeerAuthentication
+Metadata:
+  Creation Timestamp:  2023-07-23T18:34:10Z
+  Generation:          1
+  Resource Version:    75441
+  UID:                 094c629c-1e0c-4346-9e41-ea01d0efccc4
+Spec:
+  Mtls:
+    Mode:  STRICT
+Events:    <none>
+
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ k delete   peerauthentication default  -n test
+peerauthentication.security.istio.io "default" deleted
+
+
+now as permissive mode, both working.
+------------------------------------------------------------------------------------------------------------------
