@@ -1,0 +1,14 @@
+-------------------------------Istio deployment models.------------------------------------------------------------
+
+When planning how to deploy Istio, we need to decide whether we want our mesh to span a single or multiple Kubernetes clusters,
+whether services span one or more networks, whether to use a single or multiple control planes, 
+and whether we need to support a single or multiple tenants.
+
+--------------------------------Onboarding VM workloads.-------------------------------------------------------------
+Not all mesh workloads run on Kubernetes. Here we discuss how to make workloads running on VMs a part of the mesh.
+
+------------------Extending the behavior of Envoy sidecars with Wasm plugins. -----------------------------------------------
+Istio and Envoy support extension of the behavior of sidecars via WebAssembly plugins.
+
+We will provide an overview of this technology and how it works with Istio.
+----------------------------------------------------------------------------------------------------------------------------
