@@ -34,4 +34,47 @@ A typical example of an external control plane is when a cloud vendor is managin
 
 For high availability, we should deploy multiple control plane instances across multiple clusters, zones, or regions .
 
-see pic.  
+see pic.  Multiple control planes
+
+This model offers improved availability and configuration isolation. 
+If one of the control planes becomes unavailable, the outage is limited to that one control plane.
+To improve that, you can implement failover and configure workload instances to connect to 
+another control plane in case of a failure.
+
+For the highest availability possible, we can deploy a control plane inside each cluster.
+-----------------------------------Mesh deployment models---------------------------------------------------
+All diagrams and scenarios we look at so far were using a single mesh. In a single mesh model, 
+all services are in one mesh, regardless of how many clusters and networks they are spanning.
+
+
+A deployment model where multiple meshes are federated together is called a multi-mesh deployment. 
+In this model, services can communicate across mesh boundaries. The model gives us a cleaner organizational boundary,
+stronger isolation and allows us to reuse service names and namespaces. <-------------------------------
+
+When federating two meshes, each mesh can expose a set of services and identities, which all participating meshes 
+can recognize. 
+To enable cross-mesh service communication we have to enable trust between the two meshes. 
+Trust can be established by importing a trust bundle to a mesh and configuring local policies for those identities.
+
+-------------------------------------Tenancy models---------------------------------------------------------
+A tenant is a group of users sharing common access and privileges to a set of workloads. 
+Isolation between the tenants is done through network configuration and policies.
+Istio supports namespace and cluster tenancies. Note that the tenancy we talk about here is soft multi-tenancy, not hard.
+There is no guaranteed protection against things like noisy neighbor problems when multiple tenants 
+share the same Istio control plane.
+
+Within a mesh, Istio uses namespaces as a unit of tenancy. 
+If using Kubernetes we can grant permissions for workloads deployments per namespace.
+By default, services from different namespaces can communicate with each other through fully qualified names.
+
+In the Security module, we have learned how to improve isolation using 
+authorization policies and restrict access to only the appropriate callers.
+
+In the multi-cluster deployment models, the namespaces in each cluster sharing the same name are considered the same namespace.
+Service Customers from namespace default in cluster A refers to the same service as service Customers from namespace default
+in cluster B. 
+When traffic is sent to service Customers, load balancing is done across merged endpoints of both services 
+as shown in the following figure.
+
+
+
