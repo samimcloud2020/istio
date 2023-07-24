@@ -1,0 +1,17 @@
+A multi-cluster deployment (two or more clusters) gives us a greater degree of isolation and availability,
+but the cost we pay is in increased complexity. 
+
+If the scenarios call for high availability (HA), we will have to deploy clusters across multiple zones and regions.
+
+The next decision we need to make is to decide if we want to run the clusters 
+within one network or if we want to use multiple networks.
+-----------------------------a multi-cluster scenario (Cluster A, B, and C), deployed across two networks.-------------
+see pic.  Multi-cluster service mesh
+
+-----------------------------Network deployment models-----------------------------------------------------------------
+When there are multiple networks involved, the workloads running inside the clusters have to use Istio gateways 
+to reach workloads in other clusters.
+
+The use of multiple networks allows for better fault tolerance and scaling of network addresses.
+
+see pic.   Multi-network service mesh
