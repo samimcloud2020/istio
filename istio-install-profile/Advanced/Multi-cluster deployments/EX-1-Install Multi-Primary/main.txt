@@ -17,7 +17,7 @@ spec:
         clusterName: cluster1
       network: network1
 
-$ istioctl install --context="${CTX_CLUSTER1}" -f cluster1.yaml
+$ istioctl install --context="cluster1" -f cluster1.yaml
 ---------------cluster2.yaml--Configure cluster2 as a primary------------------------------------------------------
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
@@ -29,21 +29,21 @@ spec:
         clusterName: cluster2
       network: network1
 
-$ istioctl install --context="${CTX_CLUSTER2}" -f cluster2.yaml
+$ istioctl install --context="cluster2" -f cluster2.yaml
 --------------------------------------Enable Endpoint Discovery------------------------------------------------------------
 Install a remote secret in cluster2 that provides access to cluster1’s API server.
 
 $ istioctl x create-remote-secret \
-    --context="${CTX_CLUSTER1}" \
+    --context="cluster1" \
     --name=cluster1 | \
-    kubectl apply -f - --context="${CTX_CLUSTER2}"
+    kubectl apply -f - --context="cluster2"
 
 Install a remote secret in cluster1 that provides access to cluster2’s API server.
 
 $ istioctl x create-remote-secret \
-    --context="${CTX_CLUSTER2}" \
+    --context="cluster2" \
     --name=cluster2 | \
-    kubectl apply -f - --context="${CTX_CLUSTER1}"
+    kubectl apply -f - --context="cluster1"
 
 Congratulations! You successfully installed an Istio mesh across multiple primary clusters!
 ----------------we will deploy the HelloWorld application V1 to cluster1 and V2 to cluster2.-----------------------------
@@ -60,14 +60,14 @@ We will address this by deploying the HelloWorld Service to each cluster in the 
 
 To begin, create the sample namespace in each cluster:
 
-$ kubectl create --context="${CTX_CLUSTER1}" namespace sample
-$ kubectl create --context="${CTX_CLUSTER2}" namespace sample
+$ kubectl create --context="cluster1" namespace sample
+$ kubectl create --context="cluster2" namespace sample
 
 Enable automatic sidecar injection for the sample namespace:
 
-$ kubectl label --context="${CTX_CLUSTER1}" namespace sample \
+$ kubectl label --context="cluster1" namespace sample \
     istio-injection=enabled
-$ kubectl label --context="${CTX_CLUSTER2}" namespace sample \
+$ kubectl label --context="cluster2" namespace sample \
     istio-injection=enabled
 -------------------------------helloworld.yaml---------------------------------------------------------------------
 Create the HelloWorld service in both clusters:
@@ -148,38 +148,38 @@ spec:
 
 Create the HelloWorld service in both clusters:
 
-$ kubectl apply --context="${CTX_CLUSTER1}" \
+$ kubectl apply --context="cluster1" \
     -f helloworld.yaml \
     -l service=helloworld -n sample
-$ kubectl apply --context="${CTX_CLUSTER2}" \
+$ kubectl apply --context="cluster2" \
     -f helloworld.yaml \
     -l service=helloworld -n sample        
 
 -------------------------------Deploy HelloWorld V1-----------------------------------------------------------------
 Deploy the helloworld-v1 application to cluster1:
 
-$ kubectl apply --context="${CTX_CLUSTER1}" \
+$ kubectl apply --context="cluster1" \
     -f helloworld.yaml \
     -l version=v1 -n sample
 
 Confirm the helloworld-v1 pod status:    
 
-$ kubectl get pod --context="${CTX_CLUSTER1}" -n sample -l app=helloworld
+$ kubectl get pod --context="cluster1" -n sample -l app=helloworld
 NAME                            READY     STATUS    RESTARTS   AGE
 helloworld-v1-86f77cd7bd-cpxhv  2/2       Running   0          40s
 
 Wait until the status of helloworld-v1 is Running.
 
--------------------------------------Deploy HelloWorld V1--------------------------------------------------------------------
+-------------------------------------Deploy HelloWorld V2--------------------------------------------------------------------
 Deploy the helloworld-v2 application to cluster2:
 
-$ kubectl apply --context="${CTX_CLUSTER2}" \
+$ kubectl apply --context="cluster2" \
     -f helloworld.yaml \
     -l version=v2 -n sample
 
 Confirm the status the helloworld-v2 pod status:
 
-$ kubectl get pod --context="${CTX_CLUSTER2}" -n sample -l app=helloworld
+$ kubectl get pod --context="cluster2" -n sample -l app=helloworld
 NAME                            READY     STATUS    RESTARTS   AGE
 helloworld-v2-758dd55874-6x4t8  2/2       Running   0          40s
 
@@ -245,14 +245,14 @@ spec:
 
 
 
-$ kubectl apply --context="${CTX_CLUSTER1}" \
+$ kubectl apply --context="cluster1" \
     -f sleep.yaml -n sample
-$ kubectl apply --context="${CTX_CLUSTER2}" \
+$ kubectl apply --context="cluster2" \
     -f sleep.yaml -n sample
 
 Confirm the status Sleep pod on cluster1:
 
-$ kubectl get pod --context="${CTX_CLUSTER1}" -n sample -l app=sleep
+$ kubectl get pod --context="cluster1" -n sample -l app=sleep
 NAME                             READY   STATUS    RESTARTS   AGE
 sleep-754684654f-n6bzf           2/2     Running   0          5s
 
@@ -260,7 +260,7 @@ Wait until the status of the Sleep pod is Running.
 
 Confirm the status of the Sleep pod on cluster2:
 
-$ kubectl get pod --context="${CTX_CLUSTER2}" -n sample -l app=sleep
+$ kubectl get pod --context="cluster2" -n sample -l app=sleep
 NAME                             READY   STATUS    RESTARTS   AGE
 sleep-754684654f-dzl9j           2/2     Running   0          5s
 
@@ -272,8 +272,8 @@ using the Sleep pod.
 To ensure load balancing is working properly, call the HelloWorld service from all clusters in your deployment.
 
 Send one request from the Sleep pod on cluster1 to the HelloWorld service:
-$ kubectl exec --context="${CTX_CLUSTER1}" -n sample -c sleep \
-    "$(kubectl get pod --context="${CTX_CLUSTER1}" -n sample -l \
+$ kubectl exec --context="cluster1" -n sample -c sleep \
+    "$(kubectl get pod --context="cluster1" -n sample -l \
     app=sleep -o jsonpath='{.items[0].metadata.name}')" \
     -- curl -sS helloworld.sample:5000/hello
 
@@ -299,6 +299,80 @@ Hello version: v1, instance: helloworld-v1-86f77cd7bd-cpxhv
 
 Congratulations! You successfully installed and verified Istio on multiple clusters!
 --------------------------------------------------------------------------------------------------------------
-
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: http-ingress-gateway
+  namespace: sample
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 8080
+      name: http
+      protocol: HTTP
+    hosts:
+      - "som.trycloud.co.in"   # domain name of external website
+      - "sam.trycloud.co.in"
+---    
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: helloworld-vs1
+  namespace: sample
+spec:
+  hosts:
+    - "som.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+        - destination:
+            host: helloworld.sample.svc.cluster.local
+            subset: v1
+          weight: 50
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: helloworld-vs2
+  namespace: sample
+spec:
+  hosts:
+    - "sam.trycloud.co.in"     # which incoming hosts are we applying proxy rules to. so copy the value of gateway host always
+    #- fleetman-webapp.default.svc.cluster.local
+  gateways:
+    - http-ingress-gateway
+  http:
+    - route:
+        - destination:
+            host: helloworld.sample.svc.cluster.local
+            subset: v2
+          weight: 50
+       
+---
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: helloworld-ds1
+  namespace: sample
+spec:
+  host: helloworld.sample.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+  subsets:
+    - labels:
+        version: v1
+      name: v1
+    - labels:
+        version: v2
+      name: v2
+   
     
 
