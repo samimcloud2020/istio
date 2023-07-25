@@ -38,3 +38,10 @@ samim@ip-172-31-27-156:~/istio-1.18.1$ minikube profile cluster1
 
 samim@ip-172-31-27-156:~/istio-1.18.1$ minikube profile cluster2
 * minikube profile was successfully set to cluster2
+
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl config current-context
+cluster1
+
+samim@ip-172-31-27-156:~/istio-1.18.1$ kubectl config current-context
+cluster2
