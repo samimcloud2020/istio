@@ -298,7 +298,9 @@ Hello version: v1, instance: helloworld-v1-86f77cd7bd-cpxhv
 ...
 
 Congratulations! You successfully installed and verified Istio on multiple clusters!
---------------------------------------------------------------------------------------------------------------
+-------------------------------------cluster1-------------------------------------------------------------------------
+$minikube tunnel      <--------in cluster1
+
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
@@ -376,3 +378,9 @@ spec:
    
     
 
+-----------------------------cluster1---------------------------------------------------------------------------
+samim@ip-172-31-27-156:~$ curl -sS http://som.trycloud.co.in:32274/hello
+Hello version: v1, instance: helloworld-v1-77489ccb5f-j97h9
+
+also v2 must come when repeart
+----------------------------------------------------------------------------------------------------------
